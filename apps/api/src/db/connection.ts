@@ -1,0 +1,20 @@
+import mongoose from 'mongoose';
+import { env, isProd } from '../config/env';
+import { logger } from '../lib/logger';
+
+mongoose.set('strictQuery', true); // unknown filter fields are dropped, not passed through
+
+export async function connectDb(uri = env.MONGODB_URI) {
+  if (env.DEBUG_MONGO) mongoose.set('debug', true);
+  await mongoose.connect(uri, {
+    autoIndex: !isProd,
+    maxPoolSize: 20,
+    serverSelectionTimeoutMS: 5_000, // fail fast if Mongo isn't running
+    appName: 'shopstock-api',
+  });
+  logger.info('MongoDB connected');
+}
+
+export async function disconnectDb() {
+  await mongoose.disconnect();
+}

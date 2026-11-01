@@ -1,0 +1,21 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: shopstock-mongo
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      # Initiates the replica set on first start, then just reports status.
+      test: >
+        echo "try { rs.status() } catch (e) {
+          rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'localhost:27017' }] })
+        }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      retries: 30
+
+volumes:
+  mongo-data:
