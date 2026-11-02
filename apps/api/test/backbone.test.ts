@@ -14,10 +14,15 @@ describe('backbone', () => {
   });
 
   it('unknown route → 404 in the standard error format', async () => {
-    const res = await request(app).get('/api/does-not-exist');
+    const res = await request(app).get('/does-not-exist');
     expect(res.status).toBe(404);
     expect(res.body.error).toMatchObject({ code: 'NOT_FOUND' });
     expect(res.body.error.requestId).toBe(res.headers['x-request-id']);
+  });
+
+  it('unknown /api route without a token → 401 (secure by default: no route discovery)', async () => {
+    const res = await request(app).get('/api/does-not-exist');
+    expect(res.status).toBe(401);
   });
 
   it('malformed JSON → 400 INVALID_JSON', async () => {

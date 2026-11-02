@@ -16,6 +16,20 @@ export interface BranchSummaryDto {
   name: string;
   isActive: boolean;
 }
+export interface BranchDto extends BranchSummaryDto {
+  address: string;
+  phone: string;
+}
+export interface StaffDto {
+  id: Id;
+  email: string;
+  name: string;
+  role: Role;
+  branchIds: Id[];
+  isActive: boolean;
+  mustChangePassword: boolean;
+  lastLoginAt: string | null; // ISO
+}
 export interface PublicSettingsDto {
   shopName: string;
   currency: Currency;
