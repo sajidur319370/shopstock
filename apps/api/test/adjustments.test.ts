@@ -73,6 +73,7 @@ describe('adjustments, stock counts & inventory reads', () => {
       lines: [{ productId: dal.id, qtyChange: 2 }],
     });
     expect(fresh.body.error.code).toBe('UNIT_COST_REQUIRED');
+    expect(fresh.body.error.details).toEqual([{ productId: dal.id }]); // the UI puts it on that line
   });
 
   it('an unknown product → 400 INVALID_PRODUCT', async () => {

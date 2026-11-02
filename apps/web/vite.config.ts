@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: { alias: { '@': path.resolve(import.meta.dirname, './src') } },
   server: {
     // The browser only ever talks to :5173, so dev is "same origin" just like production.
-    proxy: { '/api': 'http://localhost:4000' },
+    // API_PROXY lets a second stack run beside your dev servers (e.g. a test API on :4100).
+    proxy: { '/api': process.env.API_PROXY ?? 'http://localhost:4000' },
   },
 });

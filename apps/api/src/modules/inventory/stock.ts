@@ -142,8 +142,12 @@ async function stockIn(
   const now = ctx.now();
   if (a.unitCost === undefined) {
     const exists = await Inventory.exists({ branchId: a.branchId, productId: a.productId }).session(session);
-    if (!exists)
-      throw badRequest('UNIT_COST_REQUIRED', 'Enter a unit cost for a product with no stock here.');
+    if (!exists) {
+      // details: which line, so the UI can put the error under that line's cost field
+      throw badRequest('UNIT_COST_REQUIRED', 'Enter a unit cost for a product with no stock here.', [
+        { productId: String(a.productId) },
+      ]);
+    }
   }
 
   const oldQ = { $ifNull: ['$quantity', 0] };
