@@ -20,6 +20,8 @@ import { CategoriesPage } from '@/features/catalog/CategoriesPage';
 import { InventoryPage } from '@/features/inventory/InventoryPage';
 import { StockCountPage } from '@/features/inventory/StockCountPage';
 import { ProductHistoryPage } from '@/features/inventory/ProductHistoryPage';
+import { PosPage } from '@/features/pos/PosPage';
+import { SaleDonePage } from '@/features/pos/SaleDonePage';
 
 export function AppRoutes() {
   return (
@@ -35,7 +37,15 @@ export function AppRoutes() {
               <Route path="/profile" element={<ProfilePage />} />
 
               <Route path="/b/:branchCode" element={<BranchLayout />}>
-                <Route path="pos" element={<ComingSoon title="POS" day={12} />} />
+                <Route
+                  path="pos"
+                  element={
+                    <RequirePermission p="sale:create">
+                      <PosPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route path="sales/:saleId/print" element={<SaleDonePage />} />
                 <Route path="dashboard" element={<ComingSoon title="Dashboard" day={18} />} />
                 <Route path="sales" element={<ComingSoon title="Sales" day={13} />} />
                 <Route path="returns" element={<ComingSoon title="Returns" day={14} />} />
