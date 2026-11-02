@@ -3,6 +3,8 @@ import { authorize } from '../../middleware/authorize';
 import { bctx } from '../../middleware/branchCtx';
 import { getBranchByCode } from '../../lib/cache';
 import { inventoryRouter } from '../inventory/inventory.routes';
+import { posRouter } from '../pos/pos.routes';
+import { salesRouter } from '../sales/sale.routes';
 import { toBranchDto } from './branch.dto';
 
 /** Everything under /api/b/:branchCode hangs off this router (resolveBranch has already run). */
@@ -13,4 +15,6 @@ branchRouter.get('/', authorize('branch:view'), async (req, res) => {
   res.json({ branch: toBranchDto((await getBranchByCode(ctx.branchCode))!) });
 });
 branchRouter.use(inventoryRouter); // /inventory, /adjustments, /stock-counts, /movements, /reconcile
-// Day 11: '/sales' · Day 14: '/returns' ...
+branchRouter.use('/sales', salesRouter);
+branchRouter.use('/pos', posRouter);
+// Day 14: '/returns' · Day 15: '/purchase-orders' · Day 17: '/transfers' ...

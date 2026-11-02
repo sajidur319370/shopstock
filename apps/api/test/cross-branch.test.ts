@@ -40,7 +40,19 @@ export const PROBES: Probe[] = [
   },
   { name: 'movements', method: 'get', path: () => '/api/b/DHN/movements' },
   { name: 'reconcile', method: 'get', path: () => '/api/b/DHN/reconcile' },
-  // Day 11+: sales, returns, purchase orders, transfers, dashboard…
+  // Day 11: sales & POS
+  {
+    name: 'create sale',
+    method: 'post',
+    path: () => '/api/b/DHN/sales',
+    body: () => ({
+      clientSaleId: '3f2b1a4c-5d6e-4f70-8a9b-0c1d2e3f4a5b',
+      lines: [{ productId: FAKE_ID, qty: 1 }],
+      payments: [{ method: 'cash', amount: 100 }],
+    }),
+  },
+  { name: 'POS search', method: 'get', path: () => '/api/b/DHN/pos/search?q=oil' },
+  // Day 13+: sales history/detail, returns, purchase orders, transfers, dashboard…
 ];
 
 describe('cross-branch isolation', () => {

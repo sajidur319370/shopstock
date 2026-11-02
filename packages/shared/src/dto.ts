@@ -75,6 +75,11 @@ export interface SearchResponse {
   exactId: Id | null;
   results: ProductDto[];
 }
+/** POS search: the catalog search plus on-hand at THIS branch (never cost). */
+export interface PosSearchResponse {
+  exactId: Id | null;
+  results: (ProductDto & { onHand: number })[];
+}
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;

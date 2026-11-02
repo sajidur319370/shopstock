@@ -1,7 +1,15 @@
 import { Schema } from 'mongoose';
 import { DATE_ONLY, LIMITS } from '@shopstock/shared';
 
-export const int = { validator: Number.isInteger, message: '{PATH} must be an integer' };
+/**
+ * Integer check. `null` passes on purpose: Mongoose runs custom validators on null, and presence is
+ * `required`'s job. Without this, optional `default: null` fields (a sale discount's unused `bps` or
+ * `amount`) failed validation, so every discounted sale was rejected. Required fields still reject null.
+ */
+export const int = {
+  validator: (v: unknown) => v == null || Number.isInteger(v),
+  message: '{PATH} must be an integer',
+};
 
 /** Integer money in minor units. */
 export const money = (required = true) => ({

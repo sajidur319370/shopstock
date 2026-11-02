@@ -63,4 +63,18 @@ describe('sales model', () => {
     const ok = await Sale.create(sale());
     expect(ok.items[0]!._id).toBeInstanceOf(Types.ObjectId);
   });
+
+  it('a percent OR amount discount stores fine: the unused field is null (regression)', async () => {
+    const withDiscount = sale({ discount: { type: 'percent', bps: 500 } });
+    (withDiscount.items[0] as Record<string, unknown>).discount = { type: 'amount', amount: 300 };
+    const doc = await Sale.create(withDiscount);
+    expect(doc.discount).toMatchObject({ type: 'percent', bps: 500, amount: null });
+    expect(doc.items[0]!.discount).toMatchObject({ type: 'amount', amount: 300, bps: null });
+  });
+
+  it('…and a REQUIRED integer still rejects null', async () => {
+    const bad = sale();
+    (bad.items[0] as Record<string, unknown>).unitPrice = null;
+    await expect(Sale.create(bad)).rejects.toThrow(/unitPrice/);
+  });
 });

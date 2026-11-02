@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { can, type Permission } from '@shopstock/shared';
 import { as } from './helpers/auth';
@@ -91,7 +92,19 @@ export const ROWS: Row[] = [
     setup: stockedAtGul,
     body: () => ({ reorderLevel: 3 }),
   },
-  // Day 11+: sales, returns, POs, transfers…
+  // Day 11: every role may sell
+  {
+    method: 'post',
+    path: () => '/api/b/GUL/sales',
+    perm: 'sale:create',
+    setup: stockedAtGul,
+    body: (_s, x) => ({
+      clientSaleId: randomUUID(),
+      lines: [{ productId: x.productId, qty: 1 }],
+      payments: [{ method: 'cash', amount: 1_000_000 }],
+    }),
+  },
+  // Day 14+: returns, POs, transfers…
 ];
 
 const ACTORS = ['owner', 'managerGul', 'cashierGul'] as const;

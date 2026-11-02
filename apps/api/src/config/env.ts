@@ -12,6 +12,8 @@ const EnvSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32),
   ACCESS_TOKEN_TTL_SEC: z.coerce.number().int().default(900), // 15 min; set 30 in dev to test refresh
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
+  // Optional: 'debug' shows "transaction retried" lines (write conflicts being resolved). Tests stay silent.
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
