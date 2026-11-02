@@ -4,14 +4,30 @@ import { z } from 'zod';
 import { AppError, badRequest, notFound } from '../lib/errors';
 
 /** E11000 duplicate-key errors carry the index name → API error (schema.md §18). */
-const DUPLICATE_KEY: Record<string, { status: number; code: string }> = {
-  uniq_email: { status: 409, code: 'EMAIL_TAKEN' },
-  uniq_branch_code: { status: 409, code: 'BRANCH_CODE_TAKEN' },
-  uniq_category_name: { status: 409, code: 'CATEGORY_TAKEN' },
-  uniq_sku: { status: 409, code: 'SKU_TAKEN' },
-  uniq_barcode: { status: 409, code: 'BARCODE_TAKEN' },
-  uniq_supplier_name: { status: 409, code: 'SUPPLIER_TAKEN' },
-  uniq_inventory_row: { status: 409, code: 'RETRY' },
+const DUPLICATE_KEY: Record<string, { status: number; code: string; message: string }> = {
+  uniq_email: { status: 409, code: 'EMAIL_TAKEN', message: 'This email is already in use.' },
+  uniq_branch_code: {
+    status: 409,
+    code: 'BRANCH_CODE_TAKEN',
+    message: 'Another branch already uses this code.',
+  },
+  uniq_category_name: {
+    status: 409,
+    code: 'CATEGORY_TAKEN',
+    message: 'A category with this name already exists.',
+  },
+  uniq_sku: { status: 409, code: 'SKU_TAKEN', message: 'Another product already uses this SKU.' },
+  uniq_barcode: { status: 409, code: 'BARCODE_TAKEN', message: 'Another product already uses this barcode.' },
+  uniq_supplier_name: {
+    status: 409,
+    code: 'SUPPLIER_TAKEN',
+    message: 'A supplier with this name already exists.',
+  },
+  uniq_inventory_row: {
+    status: 409,
+    code: 'RETRY',
+    message: 'Someone else just changed this. Please try again.',
+  },
 };
 
 export function toAppError(err: unknown): AppError {
@@ -31,7 +47,7 @@ export function toAppError(err: unknown): AppError {
   if (e.code === 11000) {
     const index = /index: (\S+)/.exec(e.message ?? '')?.[1];
     const mapped = index ? DUPLICATE_KEY[index] : undefined;
-    if (mapped) return new AppError(mapped.status, mapped.code);
+    if (mapped) return new AppError(mapped.status, mapped.code, mapped.message);
   }
   // 121 = DocumentValidationFailure: the inventory $jsonSchema caught negative stock (Day 8).
   if (e.code === 121) return new AppError(500, 'STOCK_INVARIANT', 'Something went wrong.');

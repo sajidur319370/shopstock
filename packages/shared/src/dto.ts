@@ -41,6 +41,18 @@ export interface PublicSettingsDto {
   receiptFormat: '80mm' | 'a4';
   invoiceFooter: string;
 }
+/** GET /settings/full (Owner): everything stored, including BOTH discount caps. */
+export interface ShopSettingsDto {
+  shopName: string;
+  currency: Currency;
+  timezone: string;
+  taxRateBps: number;
+  taxLabel: string;
+  discountCapsBps: { cashier: number; manager: number };
+  returnWindowDays: number;
+  invoiceFooter: string;
+  receiptFormat: '80mm' | 'a4';
+}
 export interface AuthResponse {
   accessToken: string;
   user: UserDto;

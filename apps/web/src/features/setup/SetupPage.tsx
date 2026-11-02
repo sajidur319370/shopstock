@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react';
-import { useForm, useWatch, type FieldPath } from 'react-hook-form';
+import { Controller, useForm, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Navigate } from 'react-router';
 import type { z } from 'zod';
-import { formatBps, setupSchema, type SetupInput } from '@shopstock/shared';
+import { setupSchema, type SetupInput } from '@shopstock/shared';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/FormField';
+import { PercentInput } from '@/components/PercentInput';
 import { applyServerErrors } from '@/lib/formErrors';
 import { AuthCard } from '../auth/AuthCard';
 import { useSetup } from '../auth/useAuthActions';
@@ -44,7 +45,6 @@ export function SetupPage() {
     control,
     formState: { errors, isSubmitting },
   } = form;
-  const taxRateBps = useWatch({ control, name: 'taxRateBps' });
 
   if (status.data && !status.data.needsSetup) return <Navigate to="/login" replace />;
 
@@ -96,11 +96,17 @@ export function SetupPage() {
             </FormField>
             <FormField
               id="tax"
-              label="VAT rate (basis points)"
-              error={errors.taxRateBps?.message}
-              hint={`500 = 5%. Currently ${formatBps(taxRateBps || 0)}`}
+              label="VAT rate"
+              error={errors.taxRateBps && 'Enter a percentage from 0 to 50'}
+              hint="e.g. 5 or 7.5. Use 0 for no VAT. You can change it later in Settings."
             >
-              <Input id="tax" type="number" {...register('taxRateBps', { valueAsNumber: true })} />
+              <Controller
+                control={control}
+                name="taxRateBps"
+                render={({ field }) => (
+                  <PercentInput id="tax" max={50} value={field.value ?? null} onChange={field.onChange} />
+                )}
+              />
             </FormField>
           </>
         )}

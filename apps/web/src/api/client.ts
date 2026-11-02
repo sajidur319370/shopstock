@@ -2,11 +2,14 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly details?: unknown;
-  constructor(status: number, code: string, message: string, details?: unknown) {
+  /** The API path that failed, e.g. '/b/DHN/sales' (lets the cache react to branch 404s). */
+  readonly path?: string;
+  constructor(status: number, code: string, message: string, details?: unknown, path?: string) {
     super(message);
     this.status = status;
     this.code = code;
     this.details = details;
+    this.path = path;
   }
 }
 
@@ -24,12 +27,18 @@ async function send(path: string, init: RequestInit): Promise<Response> {
   return fetch(`/api${path}`, { ...init, headers, credentials: 'include' });
 }
 
-async function parse<T>(res: Response): Promise<T> {
+async function parse<T>(res: Response, path: string): Promise<T> {
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const e = data?.error;
-    throw new ApiError(res.status, e?.code ?? 'NETWORK_ERROR', e?.message ?? 'Request failed', e?.details);
+    throw new ApiError(
+      res.status,
+      e?.code ?? 'NETWORK_ERROR',
+      e?.message ?? 'Request failed',
+      e?.details,
+      path,
+    );
   }
   return data as T;
 }
@@ -73,7 +82,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (res.status === 401 && !path.startsWith('/auth/') && !path.startsWith('/setup')) {
     if (await refreshAccessToken()) res = await send(path, init); // retry once
   }
-  return parse<T>(res);
+  return parse<T>(res, path);
 }
 
 const body = (b: unknown) => (b === undefined ? undefined : JSON.stringify(b));

@@ -23,6 +23,7 @@ describe('branches & settings', () => {
     const res = await as(s.owner.token).post('/api/branches').send({ code: 'GUL', name: 'Again' });
     expect(res.status).toBe(409);
     expect(res.body.error.code).toBe('BRANCH_CODE_TAKEN');
+    expect(res.body.error.message).toBe('Another branch already uses this code.'); // shown under the field
     expect(await Counter.countDocuments()).toBe(before);
   });
 
