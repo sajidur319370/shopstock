@@ -42,7 +42,20 @@ export const ROWS: Row[] = [
       temporaryPassword: 'Passw0rd!',
     }),
   },
-  // Day 7+: categories, products, adjustments, sales, returns, POs, transfers…
+  {
+    method: 'post',
+    path: () => '/api/categories',
+    perm: 'catalog:manage',
+    body: () => ({ name: `Cat ${Math.random()}` }),
+  },
+  {
+    method: 'post',
+    path: () => '/api/products',
+    perm: 'catalog:manage',
+    // An unknown category → 400 for allowed roles (still "not 403"); cashiers are stopped before validation.
+    body: () => ({ sku: 'RBAC-1', name: 'Rbac', price: 100, categoryId: '0123456789abcdef01234567' }),
+  },
+  // Day 8+: adjustments, sales, returns, POs, transfers…
 ];
 
 const ACTORS = ['owner', 'managerGul', 'cashierGul'] as const;

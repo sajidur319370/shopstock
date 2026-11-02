@@ -3,3 +3,5 @@ export * from './session.model';
 export * from './settings.model';
 export * from './branch.model';
 export * from './counter.model';
+export * from './category.model';
+export * from './product.model';

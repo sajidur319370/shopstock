@@ -1,5 +1,5 @@
 import type { Currency } from './money';
-import type { Role } from './constants';
+import type { Role, Unit } from './constants';
 
 export type Id = string;
 
@@ -52,6 +52,31 @@ export interface ShopSettingsDto {
   returnWindowDays: number;
   invoiceFooter: string;
   receiptFormat: '80mm' | 'a4';
+}
+export interface CategoryDto {
+  id: Id;
+  name: string;
+}
+export interface ProductDto {
+  id: Id;
+  sku: string;
+  barcode: string | null;
+  name: string;
+  categoryId: Id;
+  price: number; // minor units
+  unit: Unit;
+  reorderLevel: number; // default for new inventory rows
+  isActive: boolean;
+  priceUpdatedAt: string | null; // ISO
+}
+/** `exactId`: a scanner typed a full barcode/SKU, so the POS can add that product straight away. */
+export interface SearchResponse {
+  exactId: Id | null;
+  results: ProductDto[];
+}
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
 }
 export interface AuthResponse {
   accessToken: string;

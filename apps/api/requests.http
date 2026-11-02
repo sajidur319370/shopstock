@@ -1,23 +1,148 @@
 @base = http://localhost:4000/api
+# Your owner login. Change these two lines to the account you created in the setup wizard.
+@email = owner@shop.dev
+@password = Passw0rd!
 
 ### Status
 GET {{base}}/setup/status
 
-### Setup (once)
+### Setup (once, on a fresh DB)
 POST {{base}}/setup
 Content-Type: application/json
 
 { "shopName": "Daily Needs Mart", "currency": { "code": "BDT", "symbol": "৳", "minorUnits": 2 },
   "timezone": "Asia/Dhaka", "taxRateBps": 500,
-  "owner": { "name": "Karim", "email": "owner@shop.dev", "password": "Passw0rd!" },
+  "owner": { "name": "Karim", "email": "{{email}}", "password": "{{password}}" },
   "branch": { "code": "GUL", "name": "Gulshan" } }
 
-### Login
+### Login (run this first: the requests below reuse its token)
+# @name login
 POST {{base}}/auth/login
 Content-Type: application/json
 
-{ "email": "owner@shop.dev", "password": "Passw0rd!" }
+{ "email": "{{email}}", "password": "{{password}}" }
 
-### Me (paste the accessToken)
+###
+@token = {{login.response.body.accessToken}}
+
+### Me
 GET {{base}}/me
-Authorization: Bearer <token>
+Authorization: Bearer {{token}}
+
+# ─────────────────────────── Day 7: sample catalog ───────────────────────────
+# Run each request once, top to bottom. Prices are in MINOR units (paisa): 18500 = ৳185.00.
+
+### Category: Groceries
+# @name groceries
+POST {{base}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Groceries" }
+
+### Category: Oil & Ghee
+# @name oil
+POST {{base}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Oil & Ghee" }
+
+### Category: Personal Care
+# @name care
+POST {{base}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Personal Care" }
+
+###
+@groceriesId = {{groceries.response.body.category.id}}
+@oilId = {{oil.response.body.category.id}}
+@careId = {{care.response.body.category.id}}
+
+### Product: Miniket Rice 5kg
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "RICE-MIN-5KG", "barcode": "8941100100011", "name": "Miniket Rice 5kg", "categoryId": "{{groceriesId}}", "price": 42000, "unit": "bag", "reorderLevel": 10 }
+
+### Product: Red Lentils 1kg
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "DAL-RED-1KG", "barcode": "8941100100028", "name": "Red Lentils 1kg", "categoryId": "{{groceriesId}}", "price": 13500, "unit": "pack", "reorderLevel": 15 }
+
+### Product: Sugar 1kg
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "SUGAR-1KG", "barcode": "8941100100035", "name": "Sugar 1kg", "categoryId": "{{groceriesId}}", "price": 14000, "unit": "pack", "reorderLevel": 20 }
+
+### Product: Iodized Salt 1kg
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "SALT-1KG", "barcode": "8941100100042", "name": "Iodized Salt 1kg", "categoryId": "{{groceriesId}}", "price": 4200, "unit": "pack", "reorderLevel": 20 }
+
+### Product: Atta Flour 2kg (no barcode: sold loose-packed)
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "ATTA-2KG", "name": "Atta Flour 2kg", "categoryId": "{{groceriesId}}", "price": 13000, "unit": "pack", "reorderLevel": 10 }
+
+### Product: Soybean Oil 1L
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "OIL-SOY-1L", "barcode": "8941100500017", "name": "Soybean Oil 1L", "categoryId": "{{oilId}}", "price": 18500, "unit": "bottle", "reorderLevel": 12 }
+
+### Product: Mustard Oil 500ml
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "OIL-MUS-500", "barcode": "8941100500024", "name": "Mustard Oil 500ml", "categoryId": "{{oilId}}", "price": 16000, "unit": "bottle", "reorderLevel": 8 }
+
+### Product: Pure Ghee 400g
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "GHEE-400", "barcode": "8941100500031", "name": "Pure Ghee 400g", "categoryId": "{{oilId}}", "price": 65000, "unit": "pcs", "reorderLevel": 5 }
+
+### Product: Herbal Shampoo 340ml
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "SHAMPOO-340", "barcode": "8941100900015", "name": "Herbal Shampoo 340ml", "categoryId": "{{careId}}", "price": 39500, "unit": "bottle", "reorderLevel": 6 }
+
+### Product: Bath Soap 100g
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sku": "SOAP-100", "barcode": "8941100900022", "name": "Bath Soap 100g", "categoryId": "{{careId}}", "price": 6500, "unit": "pcs", "reorderLevel": 24 }
+
+### Search: scanner-style exact barcode (expect exactId = the Soybean Oil id)
+GET {{base}}/products/search?q=8941100500017
+Authorization: Bearer {{token}}
+
+### Search: name prefix
+GET {{base}}/products/search?q=soy
+Authorization: Bearer {{token}}
+
+### Search: a word in the middle ("Soybean Oil", "Mustard Oil")
+GET {{base}}/products/search?q=oil
+Authorization: Bearer {{token}}
+
+### Product list A→Z
+GET {{base}}/products
+Authorization: Bearer {{token}}
