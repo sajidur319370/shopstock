@@ -24,3 +24,4 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:cov -w @shopstock/shared # the pricing engine must keep 100% branch coverage
+      - run: npm run build # the same build Render runs: a broken build fails here, not on deploy
