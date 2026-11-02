@@ -1,5 +1,6 @@
 import type { Currency } from './money';
-import type { AdjustmentReason, MovementType, RefType, Role, Unit } from './constants';
+import type { AdjustmentReason, MovementType, PaymentMethod, RefType, Role, Unit } from './constants';
+import type { Discount } from './pricing';
 
 export type Id = string;
 
@@ -127,6 +128,51 @@ export interface AdjustmentResultDto {
   refNo: string | null; // null: a stock count where nothing differed
   refId: Id | null;
   lines: number;
+}
+/** One sale line: the price AND cost as they were at the moment of sale (snapshots). */
+export interface SaleLineDto {
+  id: Id; // saleLineId: what returns point to
+  productId: Id;
+  sku: string;
+  name: string;
+  qty: number;
+  unitPrice: number;
+  discount: Discount | null; // the line discount INPUT
+  lineDiscount: number;
+  cartShare: number;
+  net: number;
+  tax: number;
+  total: number;
+  returnedQty: number;
+  unitCost?: number; // Manager+ only
+}
+
+export interface SaleDto {
+  id: Id;
+  invoiceNo: string; // 'GUL-000124'
+  branchCode: string;
+  cashierId: Id;
+  cashierName: string;
+  items: SaleLineDto[];
+  discount: Discount | null; // the cart discount INPUT
+  taxRateBps: number;
+  totals: {
+    subtotal: number;
+    discount: number;
+    net: number;
+    tax: number;
+    total: number;
+    itemCount: number;
+    cost?: number; // Manager+ only
+  };
+  payments: { method: PaymentMethod; amount: number; reference: string }[];
+  change: number;
+  customer: { name: string; phone: string };
+  note: string;
+  returnStatus: 'none' | 'partial' | 'full';
+  printCount: number;
+  businessDate: string;
+  createdAt: string;
 }
 export interface AuthResponse {
   accessToken: string;
