@@ -15,7 +15,8 @@
     "test": "npm run test --workspaces --if-present",
     "format": "prettier --write .",
     "db:up": "docker compose up -d --wait mongo",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "db:reset": "docker exec shopstock-mongo mongosh shopstock --quiet --eval \"db.getCollectionNames().forEach(c => db[c].deleteMany({})); print('local shopstock DB emptied (indexes kept)')\""
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
