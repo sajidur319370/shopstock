@@ -64,7 +64,7 @@ productsRouter.post('/', authorize('catalog:manage'), validate(createReq), async
 });
 
 productsRouter.get('/:id', authorize('catalog:view'), validate(idReq), async (req, res) => {
-  res.json({ product: await products.getProduct(oid(valid(req, idReq).params.id)) });
+  res.json(await products.getProduct(req.ctx, oid(valid(req, idReq).params.id))); // { product, stock }
 });
 
 const updateReq = { params: idParams, body: updateProductSchema };

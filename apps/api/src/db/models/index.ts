@@ -5,3 +5,5 @@ export * from './branch.model';
 export * from './counter.model';
 export * from './category.model';
 export * from './product.model';
+export * from './inventory.model';
+export * from './stockMovement.model';

@@ -1,5 +1,5 @@
 import type { Currency } from './money';
-import type { Role, Unit } from './constants';
+import type { AdjustmentReason, MovementType, RefType, Role, Unit } from './constants';
 
 export type Id = string;
 
@@ -77,6 +77,56 @@ export interface SearchResponse {
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;
+}
+export type StockStatus = 'ok' | 'low' | 'out' | 'not_stocked';
+
+/** One product at one branch. Cost fields only with inventory:viewCost (NFR-SEC-14: never for cashiers). */
+export interface InventoryRowDto {
+  productId: Id;
+  sku: string;
+  name: string;
+  unit: Unit;
+  categoryId: Id;
+  quantity: number; // 0 when not stocked
+  reorderLevel: number;
+  status: StockStatus;
+  avgCost?: number;
+  value?: number; // quantity × avgCost
+}
+
+/** Product detail: this product at each of MY branches. */
+export interface BranchStockDto {
+  branchId: Id;
+  branchCode: string;
+  quantity: number;
+  reorderLevel: number;
+  status: StockStatus;
+  avgCost?: number;
+}
+
+export interface MovementDto {
+  id: Id;
+  productId: Id;
+  productName?: string;
+  type: MovementType;
+  qtyChange: number;
+  quantityAfter: number;
+  refType: RefType;
+  refId: Id;
+  refNo: string;
+  reason: AdjustmentReason | null;
+  note: string;
+  userName: string;
+  businessDate: string;
+  createdAt: string;
+  unitCost?: number; // only with inventory:viewCost
+  valueChange?: number;
+}
+
+export interface AdjustmentResultDto {
+  refNo: string | null; // null: a stock count where nothing differed
+  refId: Id | null;
+  lines: number;
 }
 export interface AuthResponse {
   accessToken: string;

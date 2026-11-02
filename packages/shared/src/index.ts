@@ -10,3 +10,4 @@ export * from './schemas/settings';
 export * from './schemas/branch';
 export * from './schemas/staff';
 export * from './schemas/catalog';
+export * from './schemas/inventory';

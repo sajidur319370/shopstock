@@ -7,7 +7,8 @@
     "build": "tsup src/server.ts --format esm --target node22 --noExternal @shopstock/shared --clean",
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "db:sync": "tsx scripts/db-sync.ts"
   },
   "dependencies": {
     "@shopstock/shared": "*",

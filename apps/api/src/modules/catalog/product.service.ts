@@ -11,16 +11,18 @@ import { badRequest, conflict, notFound } from '../../lib/errors';
 import { oid } from '../../lib/ids';
 import { escapeRegex } from '../../lib/regex';
 import type { Ctx } from '../../types/ctx';
+import { productHasStockHistory, stockAcrossMyBranches } from '../inventory/inventory.service';
 import { PRODUCT_CARD, toProductDto } from './catalog.dto';
 
 async function assertCategory(id: string) {
   if (!(await Category.exists({ _id: oid(id) }))) throw badRequest('INVALID_CATEGORY', 'Unknown category.');
 }
 
-export async function getProduct(id: Types.ObjectId) {
+/** The product + its stock at each of MY branches (queries.md §7.3; cost only for Manager+). */
+export async function getProduct(ctx: Ctx, id: Types.ObjectId) {
   const p = await Product.findById(id).select(PRODUCT_CARD).lean();
   if (!p) throw notFound();
-  return toProductDto(p); // Day 8 adds stock per branch (queries.md §7.3)
+  return { product: toProductDto(p), stock: await stockAcrossMyBranches(ctx, id) };
 }
 
 export async function createProduct(ctx: Ctx, input: CreateProductInput) {
@@ -55,8 +57,9 @@ export async function updateProduct(ctx: Ctx, id: Types.ObjectId, input: UpdateP
 }
 
 export async function deleteProduct(id: Types.ObjectId) {
-  // Day 8 adds: if (await Inventory.exists({ productId: id }).setOptions({ skipBranchCheck: 'product-in-use-check' }))
-  //   throw conflict('PRODUCT_IN_USE', 'This product has stock history. Archive it instead.');
+  if (await productHasStockHistory(id)) {
+    throw conflict('PRODUCT_IN_USE', 'This product has stock history. Archive it instead.'); // FR-CAT-06
+  }
   const r = await Product.deleteOne({ _id: id });
   if (r.deletedCount === 0) throw notFound();
 }

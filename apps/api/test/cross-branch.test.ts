@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { as } from './helpers/auth';
 import { makeShop, type Shop } from './factories/shop';
 
+/** Any well-formed id: resolveBranch must answer 404 BEFORE anything looks at it. */
+const FAKE_ID = '0123456789abcdef01234567';
+
 type Probe = {
   name: string;
   method: 'get' | 'post' | 'patch' | 'put' | 'delete';
@@ -14,7 +17,30 @@ export const PROBES: Probe[] = [
   { name: 'branch info', method: 'get', path: () => '/api/b/DHN' },
   { name: 'branch info (lowercase code)', method: 'get', path: () => '/api/b/dhn' },
   { name: 'unknown branch', method: 'get', path: () => '/api/b/NOPE' },
-  // Day 7+: inventory, adjustments, sales, returns, purchase orders, transfers, movements, dashboard…
+  // Day 8: inventory & stock
+  { name: 'inventory list', method: 'get', path: () => '/api/b/DHN/inventory' },
+  { name: 'inventory row', method: 'get', path: () => `/api/b/DHN/inventory/${FAKE_ID}` },
+  {
+    name: 'reorder level',
+    method: 'patch',
+    path: () => `/api/b/DHN/inventory/${FAKE_ID}`,
+    body: () => ({ reorderLevel: 1 }),
+  },
+  {
+    name: 'adjustment',
+    method: 'post',
+    path: () => '/api/b/DHN/adjustments',
+    body: () => ({ reason: 'lost', lines: [{ productId: FAKE_ID, qtyChange: -1 }] }),
+  },
+  {
+    name: 'stock count',
+    method: 'post',
+    path: () => '/api/b/DHN/stock-counts',
+    body: () => ({ lines: [{ productId: FAKE_ID, expectedQty: 0, countedQty: 1, unitCost: 1 }] }),
+  },
+  { name: 'movements', method: 'get', path: () => '/api/b/DHN/movements' },
+  { name: 'reconcile', method: 'get', path: () => '/api/b/DHN/reconcile' },
+  // Day 11+: sales, returns, purchase orders, transfers, dashboard…
 ];
 
 describe('cross-branch isolation', () => {

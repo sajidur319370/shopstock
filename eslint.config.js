@@ -22,4 +22,23 @@ export default tseslint.config(
     files: ['apps/api/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
+  // ONE DOOR: only the stock module may change inventory.quantity (NFR-MAINT-04).
+  {
+    files: ['apps/api/src/**/*.ts'],
+    ignores: ['apps/api/src/modules/inventory/stock.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          // { $inc: { quantity: … } } or { $set: { quantity: … } } anywhere outside stock.ts
+          selector: "Property[key.name=/^\\$(inc|set)$/] > ObjectExpression > Property[key.name='quantity']",
+          message: 'Only modules/inventory/stock.ts may change inventory.quantity (NFR-MAINT-04).',
+        },
+        {
+          selector: "MemberExpression[object.name=/^(Inventory|StockMovement)$/][property.name='collection']",
+          message: 'No raw driver access to inventory or movements.',
+        },
+      ],
+    },
+  },
 );
