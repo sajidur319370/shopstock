@@ -1,0 +1,23 @@
+@base = http://localhost:4000/api
+
+### Status
+GET {{base}}/setup/status
+
+### Setup (once)
+POST {{base}}/setup
+Content-Type: application/json
+
+{ "shopName": "Daily Needs Mart", "currency": { "code": "BDT", "symbol": "৳", "minorUnits": 2 },
+  "timezone": "Asia/Dhaka", "taxRateBps": 500,
+  "owner": { "name": "Karim", "email": "owner@shop.dev", "password": "Passw0rd!" },
+  "branch": { "code": "GUL", "name": "Gulshan" } }
+
+### Login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{ "email": "owner@shop.dev", "password": "Passw0rd!" }
+
+### Me (paste the accessToken)
+GET {{base}}/me
+Authorization: Bearer <token>
