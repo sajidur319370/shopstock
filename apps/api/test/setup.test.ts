@@ -1,8 +1,9 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { app } from './setup/app';
 import { SETUP_BODY } from './helpers/auth';
 import { Branch, Counter, Settings, User } from '../src/db/models';
+import { env } from '../src/config/env';
 
 describe('setup', () => {
   it('status → needsSetup until done', async () => {
@@ -41,5 +42,34 @@ describe('setup', () => {
       .post('/api/setup')
       .send({ ...SETUP_BODY, branch: { code: 'gul', name: 'Gulshan' } });
     expect(await Branch.exists({ code: 'GUL' })).toBeTruthy();
+  });
+
+  describe('SETUP_TOKEN (production: a fresh public deploy can only be claimed with the token)', () => {
+    const TOKEN = 'a-long-random-setup-token';
+    afterEach(() => {
+      env.SETUP_TOKEN = undefined;
+    });
+
+    it('without SETUP_TOKEN no header is needed (dev, tests)', async () => {
+      expect((await request(app).get('/api/setup/status')).body).toEqual({
+        needsSetup: true,
+        tokenRequired: false,
+      });
+    });
+
+    it('with SETUP_TOKEN: missing or wrong header → 403, nothing created; the right one → 201', async () => {
+      env.SETUP_TOKEN = TOKEN;
+      expect((await request(app).get('/api/setup/status')).body.tokenRequired).toBe(true);
+
+      const none = await request(app).post('/api/setup').send(SETUP_BODY);
+      expect(none.status).toBe(403);
+      expect(none.body.error.code).toBe('SETUP_TOKEN_REQUIRED');
+      const wrong = await request(app).post('/api/setup').set('x-setup-token', 'nope').send(SETUP_BODY);
+      expect(wrong.status).toBe(403);
+      expect(await Settings.countDocuments()).toBe(0);
+
+      const ok = await request(app).post('/api/setup').set('x-setup-token', TOKEN).send(SETUP_BODY);
+      expect(ok.status).toBe(201);
+    });
   });
 });

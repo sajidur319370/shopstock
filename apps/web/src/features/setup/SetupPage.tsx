@@ -29,6 +29,7 @@ export function SetupPage() {
   const status = useSetupStatus();
   const setup = useSetup();
   const [step, setStep] = useState(0);
+  const [token, setToken] = useState('');
   const form = useForm<SetupForm, unknown, SetupInput>({
     resolver: zodResolver(setupSchema),
     defaultValues: {
@@ -46,12 +47,20 @@ export function SetupPage() {
     formState: { errors, isSubmitting },
   } = form;
 
-  if (status.data && !status.data.needsSetup) return <Navigate to="/login" replace />;
+  // Already set up → login. But not while OUR setup is finishing: onSuccess marks setup done before it
+  // has loaded /me and navigated to '/', and this redirect would flash the login page in between.
+  const finishing = setup.isPending || setup.isSuccess;
+  if (status.data && !status.data.needsSetup && !finishing) return <Navigate to="/login" replace />;
 
   const next = async () => {
     if (await trigger(STEPS[step]!.fields)) setStep((s) => s + 1);
   };
-  const submit = handleSubmit((v) => setup.mutateAsync(v).catch((e) => applyServerErrors(e, setError)));
+  const tokenRequired = !!status.data?.tokenRequired;
+  const submit = handleSubmit((v) =>
+    setup
+      .mutateAsync({ input: v, token: tokenRequired ? token.trim() : undefined })
+      .catch((e) => applyServerErrors(e, setError)),
+  );
   // Enter on steps 1–2 means "Next", not "submit the whole wizard".
   const onSubmit = (e: FormEvent) => {
     if (step < STEPS.length - 1) {
@@ -147,6 +156,19 @@ export function SetupPage() {
             <FormField id="bp" label="Phone" error={errors.branch?.phone?.message}>
               <Input id="bp" {...register('branch.phone')} />
             </FormField>
+            {tokenRequired && (
+              // Not part of the shop data: it goes in a header. The value is SETUP_TOKEN from the server's env.
+              <FormField id="st" label="Setup token">
+                <Input
+                  id="st"
+                  type="password"
+                  autoComplete="off"
+                  required
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                />
+              </FormField>
+            )}
           </>
         )}
         {errors.root && <p className="text-sm text-red-600">{errors.root.message}</p>}

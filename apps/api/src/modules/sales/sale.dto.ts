@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import { can, type Discount, type PaymentMethod, type SaleDto } from '@shopstock/shared';
+import { can, type Discount, type PaymentMethod, type SaleDto, type SaleRowDto } from '@shopstock/shared';
 import type { Ctx } from '../../types/ctx';
 
 type StoredDiscount = { type: string; bps?: number | null; amount?: number | null } | null | undefined;
@@ -99,3 +99,24 @@ export function toSaleDto(s: SaleLean, ctx: Pick<Ctx, 'role'>): SaleDto {
     createdAt: s.createdAt.toISOString(),
   };
 }
+
+type SaleRowLean = Pick<
+  SaleLean,
+  '_id' | 'invoiceNo' | 'cashierName' | 'returnStatus' | 'businessDate' | 'createdAt'
+> & {
+  totals?: { total: number; itemCount: number } | null;
+  payments: { method: string }[];
+};
+
+/** History row: no lines, no cost. `methods` de-duplicated (a split cash + cash is impossible, but cheap to guard). */
+export const toSaleRowDto = (s: SaleRowLean): SaleRowDto => ({
+  id: String(s._id),
+  invoiceNo: s.invoiceNo,
+  cashierName: s.cashierName,
+  total: s.totals!.total,
+  itemCount: s.totals!.itemCount,
+  methods: [...new Set(s.payments.map((p) => p.method as PaymentMethod))],
+  returnStatus: (s.returnStatus ?? 'none') as SaleRowDto['returnStatus'],
+  businessDate: s.businessDate,
+  createdAt: s.createdAt.toISOString(),
+});

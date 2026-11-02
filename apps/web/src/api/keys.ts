@@ -12,4 +12,9 @@ export const qk = {
   inventory: (code: string, f: object) => ['inventory', code, f] as const,
   inventoryRow: (code: string, productId: string) => ['inventory-row', code, productId] as const,
   movements: (code: string, f: object) => ['movements', code, f] as const,
+  branch: (code: string) => ['branch', code] as const, // full branch (address, phone) for receipts
+  // ['sales', code] invalidates every history filter of that branch after a sale
+  sales: (code: string, f: object) => ['sales', code, f] as const,
+  sale: (code: string, id: string) => ['sale', code, id] as const,
+  shift: (code: string) => ['shift', code] as const,
 };

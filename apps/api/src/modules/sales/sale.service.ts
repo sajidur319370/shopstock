@@ -8,22 +8,30 @@
  */
 import { Types } from 'mongoose';
 import {
+  can,
   discountViolations,
+  LIMITS,
   priceCart,
   settlePayments,
   toBusinessDate,
   type CreateSaleInput,
+  type Page,
+  type PaymentMethod,
   type SaleDto,
+  type SaleRowDto,
+  type SalesListQuery,
+  type ShiftSummaryDto,
 } from '@shopstock/shared';
 import { Product, Sale } from '../../db/models';
 import { counterKeys, nextSeq } from '../../db/counters';
 import { withTransaction } from '../../db/transaction';
-import { badRequest, conflict, forbidden } from '../../lib/errors';
+import { decodeCursor, encodeCursor, olderThan } from '../../lib/cursor';
+import { badRequest, conflict, forbidden, notFound } from '../../lib/errors';
 import { oid, pad6 } from '../../lib/ids';
 import { isDuplicateKey } from '../../lib/mongoErrors';
 import { discountCapFor, type BranchCtx } from '../../types/ctx';
 import { assertStockAvailable, withStockChanges } from '../inventory/stock';
-import { toSaleDto } from './sale.dto';
+import { toSaleDto, toSaleRowDto } from './sale.dto';
 
 export async function createSale(
   ctx: BranchCtx,
@@ -171,4 +179,116 @@ export async function createSale(
     }
     throw err;
   }
+}
+
+/* ---------- Day 13: history, detail, print count, shift summary (queries.md §12) ---------- */
+
+/** Cashiers only ever see their OWN sales (◐): another cashier's sale is a 404, like another branch's. */
+const visibleTo = (ctx: BranchCtx) => ({
+  branchId: ctx.branchId,
+  ...(!can(ctx.role, 'sale:viewAll') && { cashierId: ctx.userId }),
+});
+
+/** §12.1: newest first, (createdAt, _id) cursor: stable while new sales keep arriving. */
+export async function listSales(ctx: BranchCtx, f: SalesListQuery): Promise<Page<SaleRowDto>> {
+  const filter: Record<string, unknown> = visibleTo(ctx);
+  if (f.cashierId && can(ctx.role, 'sale:viewAll')) filter.cashierId = oid(f.cashierId);
+  if (f.invoiceNo) filter.invoiceNo = f.invoiceNo.toUpperCase();
+  if (f.from || f.to) filter.businessDate = { ...(f.from && { $gte: f.from }), ...(f.to && { $lte: f.to }) };
+  if (f.method) filter['payments.method'] = f.method;
+  if (f.returnStatus) filter.returnStatus = f.returnStatus;
+  if (f.cursor) Object.assign(filter, olderThan(decodeCursor(f.cursor)));
+
+  const limit = LIMITS.pageSize;
+  const rows = await Sale.find(filter)
+    .select(
+      'invoiceNo cashierName totals.total totals.itemCount payments.method returnStatus businessDate createdAt',
+    )
+    .sort({ createdAt: -1, _id: -1 })
+    .limit(limit + 1)
+    .lean();
+  const page = rows.slice(0, limit);
+  const last = page.at(-1);
+  return {
+    items: page.map(toSaleRowDto),
+    nextCursor: rows.length > limit && last ? encodeCursor(last) : null,
+  };
+}
+
+/** §12.2: by id. Another branch's sale or another cashier's: the same 404. */
+export async function getSale(ctx: BranchCtx, id: Types.ObjectId): Promise<SaleDto> {
+  const sale = await Sale.findOne({ _id: id, ...visibleTo(ctx) }).lean();
+  if (!sale) throw notFound('Sale not found.');
+  return toSaleDto(sale, ctx); // strips unitCost / totals.cost for cashiers (NFR-SEC-14)
+}
+
+/** §12.2: by invoice number (returns desk, history search). */
+export async function getSaleByInvoice(ctx: BranchCtx, invoiceNo: string): Promise<SaleDto> {
+  const sale = await Sale.findOne({ invoiceNo: invoiceNo.toUpperCase(), ...visibleTo(ctx) }).lean();
+  if (!sale) throw notFound('Sale not found.');
+  return toSaleDto(sale, ctx);
+}
+
+/** §12.3 · FR-IVC-04: atomic $inc; the document BEFORE the update says whether this is the first print. */
+export async function markPrinted(ctx: BranchCtx, id: Types.ObjectId): Promise<{ copy: boolean }> {
+  const before = await Sale.findOneAndUpdate(
+    { _id: id, ...visibleTo(ctx) },
+    { $inc: { printCount: 1 } },
+    { returnDocument: 'before', projection: { printCount: 1 } },
+  ).lean();
+  if (!before) throw notFound('Sale not found.');
+  return { copy: (before.printCount ?? 0) > 0 };
+}
+
+type ShiftFacet = {
+  totals: { count: number; total: number; items: number }[];
+  byMethod: { _id: PaymentMethod; amount: number }[];
+};
+
+/** §12.4 · FR-SAL-12: the actor's own sales with TODAY's business date (shop timezone). */
+export async function myShiftSummary(ctx: BranchCtx): Promise<ShiftSummaryDto> {
+  const businessDate = toBusinessDate(ctx.now(), ctx.settings.timezone);
+  const [res] = await Sale.aggregate<ShiftFacet>([
+    { $match: { branchId: ctx.branchId, cashierId: ctx.userId, businessDate } },
+    {
+      $facet: {
+        totals: [
+          {
+            $group: {
+              _id: null,
+              count: { $sum: 1 },
+              total: { $sum: '$totals.total' },
+              items: { $sum: '$totals.itemCount' },
+            },
+          },
+        ],
+        byMethod: [
+          { $unwind: '$payments' },
+          {
+            $group: {
+              _id: '$payments.method',
+              // Cash COLLECTED = cash tendered − change given (the drawer count at the end of the shift)
+              amount: {
+                $sum: {
+                  $cond: [
+                    { $eq: ['$payments.method', 'cash'] },
+                    { $subtract: ['$payments.amount', '$change'] },
+                    '$payments.amount',
+                  ],
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]);
+  const t = res?.totals[0] ?? { count: 0, total: 0, items: 0 };
+  return {
+    businessDate,
+    count: t.count,
+    total: t.total,
+    items: t.items,
+    byMethod: Object.fromEntries((res?.byMethod ?? []).map((m) => [m._id, m.amount])),
+  };
 }

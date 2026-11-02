@@ -1,9 +1,10 @@
+import path from 'node:path';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
-import { env } from './config/env';
+import { env, isProd } from './config/env';
 import { httpLogger } from './lib/httpLogger';
 import { rejectDollarKeys } from './middleware/rejectDollarKeys';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
@@ -35,6 +36,17 @@ export function createApp() {
   });
 
   app.use('/api', apiRouter);
+
+  // Production: ONE service serves the API and the built React app (same origin: first-party refresh
+  // cookie, no CORS). src/ and dist/ are both one level below apps/api, so this path works from either.
+  if (isProd) {
+    const dist = path.resolve(import.meta.dirname, '../../web/dist');
+    app.use(express.static(dist, { index: false, maxAge: '1h' }));
+    // SPA fallback: a reload on /b/GUL/pos must return index.html. /api/* misses still reach the 404 handler.
+    app.get('/{*splat}', (req, res, next) =>
+      req.path.startsWith('/api') ? next() : res.sendFile(path.join(dist, 'index.html')),
+    );
+  }
 
   app.use(notFoundHandler); // after all routes
   app.use(errorHandler); // last

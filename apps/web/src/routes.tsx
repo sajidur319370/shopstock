@@ -21,7 +21,9 @@ import { InventoryPage } from '@/features/inventory/InventoryPage';
 import { StockCountPage } from '@/features/inventory/StockCountPage';
 import { ProductHistoryPage } from '@/features/inventory/ProductHistoryPage';
 import { PosPage } from '@/features/pos/PosPage';
-import { SaleDonePage } from '@/features/pos/SaleDonePage';
+import { ReceiptPage } from '@/features/sales/ReceiptPage';
+import { SaleDetailPage } from '@/features/sales/SaleDetailPage';
+import { SalesHistoryPage } from '@/features/sales/SalesHistoryPage';
 
 export function AppRoutes() {
   return (
@@ -45,9 +47,10 @@ export function AppRoutes() {
                     </RequirePermission>
                   }
                 />
-                <Route path="sales/:saleId/print" element={<SaleDonePage />} />
+                <Route path="sales" element={<SalesHistoryPage />} />
+                <Route path="sales/:saleId" element={<SaleDetailPage />} />
+                <Route path="sales/:saleId/print" element={<ReceiptPage />} />
                 <Route path="dashboard" element={<ComingSoon title="Dashboard" day={18} />} />
-                <Route path="sales" element={<ComingSoon title="Sales" day={13} />} />
                 <Route path="returns" element={<ComingSoon title="Returns" day={14} />} />
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route

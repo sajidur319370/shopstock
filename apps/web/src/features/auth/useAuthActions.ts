@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import type { AuthResponse, LoginInput, MeResponse, SetupInput } from '@shopstock/shared';
-import { http, setAccessToken } from '@/api/client';
+import { api, http, setAccessToken } from '@/api/client';
 import { qk } from '@/api/keys';
 
 /** Only same-site relative paths, to prevent open redirects. */
@@ -30,15 +30,21 @@ export function useSetup() {
   const qc = useQueryClient();
   const finish = useFinishLogin();
   return useMutation({
-    mutationFn: (v: SetupInput) => http.post<AuthResponse>('/setup', v),
+    // `token`: production deploys set SETUP_TOKEN, so only whoever holds it can claim the new shop.
+    mutationFn: ({ input, token }: { input: SetupInput; token?: string }) =>
+      api<AuthResponse>('/setup', {
+        method: 'POST',
+        body: JSON.stringify(input),
+        headers: token ? { 'x-setup-token': token } : undefined,
+      }),
     onSuccess: async (res) => {
-      qc.setQueryData(qk.setupStatus, { needsSetup: false });
+      qc.setQueryData(qk.setupStatus, { needsSetup: false, tokenRequired: false });
       await finish(res, '/');
     },
     onError: (err) => {
       // Someone else finished setup first: stop showing the wizard.
       if ((err as { code?: string }).code === 'ALREADY_SET_UP') {
-        qc.setQueryData(qk.setupStatus, { needsSetup: false });
+        qc.setQueryData(qk.setupStatus, { needsSetup: false, tokenRequired: false });
       }
     },
   });

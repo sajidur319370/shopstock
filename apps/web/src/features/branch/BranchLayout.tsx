@@ -23,7 +23,9 @@ export function BranchLayout() {
   return (
     <BranchContext.Provider value={branch}>
       {!branch.isActive && (
-        <div className="mb-3 rounded bg-amber-100 p-2 text-sm">This branch is inactive: read-only.</div>
+        <div className="mb-3 rounded bg-amber-100 p-2 text-sm print:hidden">
+          This branch is inactive: read-only.
+        </div>
       )}
       <Outlet />
     </BranchContext.Provider>

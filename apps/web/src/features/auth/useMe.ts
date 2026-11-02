@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import type { MeResponse } from '@shopstock/shared';
+import type { MeResponse, SetupStatusDto } from '@shopstock/shared';
 import { getAccessToken, http, refreshAccessToken } from '@/api/client';
 import { qk } from '@/api/keys';
 
 export function useSetupStatus() {
   return useQuery({
     queryKey: qk.setupStatus,
-    queryFn: () => http.get<{ needsSetup: boolean }>('/setup/status'),
+    queryFn: () => http.get<SetupStatusDto>('/setup/status'),
     staleTime: Infinity,
   });
 }

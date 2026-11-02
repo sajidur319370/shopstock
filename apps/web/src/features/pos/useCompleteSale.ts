@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatMoney, type PaymentInput, type PricedCart, type SaleDto } from '@shopstock/shared';
 import { ApiError, http } from '@/api/client';
+import { qk } from '@/api/keys';
 import { useActor } from '@/features/auth/useActor';
 import { useBranch } from '@/features/branch/useBranch';
 import { useCart, usePosUi } from './cartStore';
@@ -45,6 +46,8 @@ export function useCompleteSale() {
       usePosUi.getState().setPayOpen(false);
       void qc.invalidateQueries({ queryKey: ['pos-search', branch.code] }); // on-hand numbers changed
       void qc.invalidateQueries({ queryKey: ['inventory', branch.code] });
+      void qc.invalidateQueries({ queryKey: ['sales', branch.code] }); // history
+      void qc.invalidateQueries({ queryKey: qk.shift(branch.code) }); // the POS shift card
       navigate(`/b/${branch.code}/sales/${sale.id}/print?from=pos`, { state: { sale } });
     },
     onError: (err) => {

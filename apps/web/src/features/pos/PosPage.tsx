@@ -6,6 +6,7 @@ import { useCart } from './cartStore';
 import { DiscountDialog } from './DiscountDialog';
 import { PayDialog } from './PayDialog';
 import { PosSearch } from './PosSearch';
+import { ShiftCard } from './ShiftCard';
 import { ShortcutHelp } from './ShortcutHelp';
 import { TotalsPanel } from './TotalsPanel';
 import { usePosShortcuts } from './usePosShortcuts';
@@ -38,7 +39,10 @@ export function PosPage() {
         <h1 className="text-lg font-semibold">
           POS · {branch.code} · {user.name}
         </h1>
-        <span className="text-xs text-gray-500">Press ? for shortcuts</span>
+        <div className="flex items-center gap-3">
+          <ShiftCard />
+          <span className="text-xs text-gray-500">Press ? for shortcuts</span>
+        </div>
       </div>
       <PosSearch inputRef={searchRef} onAdded={focusSearch} />
       <div className="grid min-h-0 flex-1 gap-3 md:grid-cols-[1fr_320px]">

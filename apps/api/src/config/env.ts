@@ -13,6 +13,9 @@ const EnvSchema = z.object({
   ACCESS_TOKEN_TTL_SEC: z.coerce.number().int().default(900), // 15 min; set 30 in dev to test refresh
   BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
   // Optional: 'debug' shows "transaction retried" lines (write conflicts being resolved). Tests stay silent.
+  // Production: when set, POST /setup needs this value in the x-setup-token header, so a fresh public
+  // deployment can't be claimed by whoever opens it first. Setup can only succeed once anyway.
+  SETUP_TOKEN: z.string().min(16).optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
 });
 

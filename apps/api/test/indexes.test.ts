@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
-import { Inventory, Product, StockMovement } from '../src/db/models';
+import { Inventory, Product, Sale, StockMovement } from '../src/db/models';
 
 /**
  * TR-10: hot queries must use an index and never sort in memory. Grows with every hot query.
@@ -54,5 +54,15 @@ describe('index usage', () => {
     }).explain('queryPlanner');
     assertIndexed(plan);
     expect(JSON.stringify(plan)).toContain('uniq_inventory_row');
+  });
+
+  it('sales history is index-ordered, for managers (whole branch) and cashiers (own sales)', async () => {
+    const branchId = new Types.ObjectId();
+    assertIndexed(await Sale.find({ branchId }).sort({ createdAt: -1, _id: -1 }).explain('queryPlanner'));
+    assertIndexed(
+      await Sale.find({ branchId, cashierId: new Types.ObjectId() })
+        .sort({ createdAt: -1, _id: -1 })
+        .explain('queryPlanner'),
+    );
   });
 });

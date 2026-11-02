@@ -179,6 +179,33 @@ export interface SaleDto {
   businessDate: string;
   createdAt: string;
 }
+/** One row of the sales history (no lines). */
+export interface SaleRowDto {
+  id: Id;
+  invoiceNo: string;
+  cashierName: string;
+  total: number;
+  itemCount: number;
+  methods: PaymentMethod[];
+  returnStatus: 'none' | 'partial' | 'full';
+  businessDate: string;
+  createdAt: string;
+}
+
+/** "My shift today" for the cashier at the POS (FR-SAL-12). */
+export interface ShiftSummaryDto {
+  businessDate: string;
+  count: number;
+  total: number;
+  items: number;
+  /** Money actually collected per method: cash = tendered − change. */
+  byMethod: Partial<Record<PaymentMethod, number>>;
+}
+
+export interface SetupStatusDto {
+  needsSetup: boolean;
+  tokenRequired: boolean; // production: POST /setup needs the x-setup-token header
+}
 export interface AuthResponse {
   accessToken: string;
   user: UserDto;

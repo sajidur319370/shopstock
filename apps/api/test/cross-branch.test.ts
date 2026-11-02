@@ -52,7 +52,13 @@ export const PROBES: Probe[] = [
     }),
   },
   { name: 'POS search', method: 'get', path: () => '/api/b/DHN/pos/search?q=oil' },
-  // Day 13+: sales history/detail, returns, purchase orders, transfers, dashboard…
+  // Day 13: sales history, detail, print count, shift (a DHN sale via GUL's URL: sales.history.test.ts)
+  { name: 'sales history', method: 'get', path: () => '/api/b/DHN/sales' },
+  { name: 'sale detail', method: 'get', path: () => `/api/b/DHN/sales/${FAKE_ID}` },
+  { name: 'sale by invoice', method: 'get', path: () => '/api/b/DHN/sales/by-invoice/DHN-000001' },
+  { name: 'mark printed', method: 'post', path: () => `/api/b/DHN/sales/${FAKE_ID}/printed` },
+  { name: 'my shift summary', method: 'get', path: () => '/api/b/DHN/sales/my-summary' },
+  // Day 14+: returns, purchase orders, transfers, dashboard…
 ];
 
 describe('cross-branch isolation', () => {

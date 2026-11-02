@@ -24,7 +24,7 @@ export function AppShell() {
   const links = items.map((i) => ({ ...i, href: i.to(current ?? '') }));
 
   return (
-    <div className="grid min-h-screen grid-rows-[auto_1fr] md:grid-cols-[220px_1fr]">
+    <div className="grid min-h-screen grid-rows-[auto_1fr] md:grid-cols-[220px_1fr] print:block">
       <header className="col-span-full flex items-center gap-3 border-b px-4 py-2 print:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -66,7 +66,7 @@ export function AppShell() {
           </div>
         ))}
       </nav>
-      <main className="min-w-0 p-4 md:p-6">
+      <main className="min-w-0 p-4 md:p-6 print:p-0">
         <Outlet />
       </main>
     </div>

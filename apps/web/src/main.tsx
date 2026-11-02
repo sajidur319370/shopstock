@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
           <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
-      <Toaster richColors position="bottom-right" />
+      <Toaster richColors position="bottom-right" className="print:hidden" />
     </QueryClientProvider>
   </StrictMode>,
 );
