@@ -66,6 +66,17 @@ const poAtGul =
     return { ...x, poId: po.id };
   };
 
+/** A pending GUL → DHN transfer of 1 (made by the Owner). */
+const pendingGulToDhn = async (s: Shop): Promise<Extra> => {
+  const x = await stockedAtGul(s);
+  const t = (
+    await as(s.owner.token)
+      .post('/api/b/GUL/transfers')
+      .send({ toBranchCode: 'DHN', lines: [{ productId: x.productId, qty: 1 }] })
+  ).body.transfer;
+  return { ...x, transferId: t.id };
+};
+
 /** Every MUTATING endpoint. Branch routes use GUL. THIS LIST GROWS EVERY DAY. */
 export const ROWS: Row[] = [
   {
@@ -208,7 +219,39 @@ export const ROWS: Row[] = [
     setup: poAtGul('ordered'),
     body: (_s, x) => ({ clientReceiptId: randomUUID(), lines: [{ productId: x.productId, qty: 1 }] }),
   },
-  // Day 17+: transfers…
+  // Day 17: transfers (Manager+)
+  {
+    method: 'post',
+    path: () => '/api/b/GUL/transfers',
+    perm: 'transfer:manage',
+    setup: stockedAtGul,
+    body: (_s, x) => ({ toBranchCode: 'DHN', lines: [{ productId: x.productId, qty: 1 }] }),
+  },
+  ...(['dispatch', 'cancel'] as const).map((action): Row => ({
+    method: 'post',
+    path: (_s, x) => `/api/b/GUL/transfers/${x.transferId}/${action}`,
+    perm: 'transfer:manage',
+    setup: pendingGulToDhn,
+  })),
+  {
+    // Received at the destination, so the transfer comes INTO GUL (the matrix acts as GUL staff)
+    method: 'post',
+    path: (_s, x) => `/api/b/GUL/transfers/${x.transferId}/receive`,
+    perm: 'transfer:manage',
+    setup: async (s) => {
+      const cat = await makeCategory(s.owner.token);
+      const p = await makeProduct(s.owner.token, { categoryId: cat.id });
+      await stockUp(s.owner.token, 'DHN', [{ productId: p.id, qty: 5, unitCost: 100 }]);
+      const t = (
+        await as(s.owner.token)
+          .post('/api/b/DHN/transfers')
+          .send({ toBranchCode: 'GUL', lines: [{ productId: p.id, qty: 1 }] })
+      ).body.transfer;
+      await as(s.owner.token).post(`/api/b/DHN/transfers/${t.id}/dispatch`);
+      return { transferId: t.id };
+    },
+  },
+  // Day 18+: …
 ];
 
 const ACTORS = ['owner', 'managerGul', 'cashierGul'] as const;

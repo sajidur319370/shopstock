@@ -6,6 +6,7 @@ import type {
   PoStatus,
   RefType,
   ReturnReason,
+  TransferStatus,
   Role,
   Unit,
 } from './constants';
@@ -342,6 +343,59 @@ export interface POSuggestionDto {
   status: 'low' | 'out';
   suggestedQty: number; // max(2 × reorderLevel − quantity, 1)
   lastCost: number | null; // the last purchase receipt cost at this branch (pre-fills unitCost)
+}
+
+/** Seen from the viewer's branch: they sent it (outgoing) or it comes to them (incoming). */
+export type TransferDirection = 'outgoing' | 'incoming';
+
+export interface TransferLineDto {
+  productId: Id;
+  sku: string;
+  name: string;
+  qty: number;
+  unitCost?: number | null; // null until dispatch; only with inventory:viewCost
+}
+
+export interface TransferDto {
+  id: Id;
+  transferNo: string; // 'TR-2026-0003'
+  fromCode: string;
+  toCode: string;
+  direction: TransferDirection;
+  status: TransferStatus;
+  items: TransferLineDto[];
+  totals: { units: number; value?: number | null }; // value: once dispatched, with inventory:viewCost
+  note: string;
+  createdByName: string;
+  dispatchedByName: string | null;
+  dispatchedAt: string | null;
+  receivedByName: string | null;
+  receivedAt: string | null;
+  cancelledByName: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+}
+
+/** One row of the transfers list (no lines). */
+export interface TransferRowDto {
+  id: Id;
+  transferNo: string;
+  fromCode: string;
+  toCode: string;
+  direction: TransferDirection;
+  status: TransferStatus;
+  lineCount: number;
+  units: number;
+  createdAt: string;
+  dispatchedAt: string | null;
+  receivedAt: string | null;
+}
+
+/** "In transit: 20 GUL → DHN" on the product page (FR-TRF-07). */
+export interface InTransitDto {
+  from: string;
+  to: string;
+  qty: number;
 }
 
 /** "My shift today" for the cashier at the POS (FR-SAL-12). */

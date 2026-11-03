@@ -53,7 +53,7 @@ export function ProductDetailPage() {
 
   if (detail.isPending) return <p className="text-gray-500">Loading…</p>;
   if (!detail.data) return <p className="text-red-600">Product not found.</p>;
-  const { product: p, stock } = detail.data;
+  const { product: p, stock, inTransit } = detail.data;
   const showCost = stock.some((s) => s.avgCost !== undefined); // the API only sends cost to Manager+
   const category = categories.data?.find((c) => c.id === p.categoryId)?.name ?? '—';
 
@@ -137,6 +137,12 @@ export function ProductDetailPage() {
             </TableBody>
           </Table>
         )}
+        {inTransit.map((t) => (
+          // FR-TRF-07: units on the road belong to neither shelf, but they exist
+          <p key={`${t.from}-${t.to}`} className="text-sm text-blue-800">
+            In transit: {t.qty} {t.from} → {t.to}
+          </p>
+        ))}
       </section>
 
       <ConfirmDialog

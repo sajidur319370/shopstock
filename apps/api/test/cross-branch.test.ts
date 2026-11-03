@@ -101,7 +101,20 @@ export const PROBES: Probe[] = [
       lines: [{ productId: FAKE_ID, qty: 1 }],
     }),
   },
-  // Day 17+: transfers, dashboard…
+  // Day 17: transfers (GUL→DHN receive as GUL staff, DHN→UTT from GUL: transfers.test.ts)
+  { name: 'transfers list', method: 'get', path: () => '/api/b/DHN/transfers' },
+  { name: 'transfer destinations', method: 'get', path: () => '/api/b/DHN/transfers/destinations' },
+  { name: 'transfer detail', method: 'get', path: () => `/api/b/DHN/transfers/${FAKE_ID}` },
+  {
+    name: 'create transfer',
+    method: 'post',
+    path: () => '/api/b/DHN/transfers',
+    body: () => ({ toBranchCode: 'GUL', lines: [{ productId: FAKE_ID, qty: 1 }] }),
+  },
+  { name: 'dispatch transfer', method: 'post', path: () => `/api/b/DHN/transfers/${FAKE_ID}/dispatch` },
+  { name: 'receive transfer', method: 'post', path: () => `/api/b/DHN/transfers/${FAKE_ID}/receive` },
+  { name: 'cancel transfer', method: 'post', path: () => `/api/b/DHN/transfers/${FAKE_ID}/cancel` },
+  // Day 18+: dashboard…
 ];
 
 describe('cross-branch isolation', () => {

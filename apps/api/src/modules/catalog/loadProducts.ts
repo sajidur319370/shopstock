@@ -26,3 +26,14 @@ export async function loadActiveProducts(ids: string[]): Promise<Map<string, Pro
   }
   return new Map(rows.map((p) => [String(p._id), { _id: p._id, sku: p.sku, name: p.name }]));
 }
+
+/**
+ * Each product's default reorder level, for the FIRST stock-in at a branch (the new inventory row
+ * copies it). Archived products included: goods already ordered or sent still arrive.
+ */
+export async function reorderDefaults(ids: Types.ObjectId[]): Promise<Map<string, number>> {
+  const rows = await Product.find({ _id: { $in: ids } })
+    .select('reorderLevel')
+    .lean();
+  return new Map(rows.map((p) => [String(p._id), p.reorderLevel ?? 0]));
+}

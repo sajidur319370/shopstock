@@ -8,6 +8,7 @@ import {
   SaleReturn,
   StockMovement,
   Supplier,
+  Transfer,
 } from '../src/db/models';
 
 /**
@@ -86,6 +87,17 @@ describe('index usage', () => {
         .sort(newest)
         .explain('queryPlanner'),
     );
+  });
+
+  it('the transfers list is index-ordered: incoming, outgoing, both, and by status', async () => {
+    const branchId = new Types.ObjectId();
+    const newest = { createdAt: -1, _id: -1 } as const;
+    const plan = (filter: Record<string, unknown>) =>
+      Transfer.find(filter).sort(newest).explain('queryPlanner');
+    assertIndexed(await plan({ $and: [{ toBranchId: branchId }] }));
+    assertIndexed(await plan({ $and: [{ fromBranchId: branchId }, { status: 'pending' }] }));
+    // both directions: two index scans merged in order (SORT_MERGE), never an in-memory SORT
+    assertIndexed(await plan({ $and: [{ $or: [{ fromBranchId: branchId }, { toBranchId: branchId }] }] }));
   });
 
   it('suppliers: A→Z active list and prefix search use an index', async () => {

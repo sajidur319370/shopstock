@@ -15,3 +15,4 @@ export * from './schemas/inventory';
 export * from './schemas/sale';
 export * from './schemas/return';
 export * from './schemas/purchasing';
+export * from './schemas/transfer';

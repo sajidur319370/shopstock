@@ -5,6 +5,7 @@ import { getBranchByCode } from '../../lib/cache';
 import { inventoryRouter } from '../inventory/inventory.routes';
 import { posRouter } from '../pos/pos.routes';
 import { poRouter } from '../purchasing/po.routes';
+import { transfersRouter } from '../transfers/transfer.routes';
 import { returnsRouter } from '../returns/return.routes';
 import { salesRouter } from '../sales/sale.routes';
 import { toBranchDto } from './branch.dto';
@@ -21,4 +22,4 @@ branchRouter.use('/sales', salesRouter);
 branchRouter.use('/pos', posRouter);
 branchRouter.use('/returns', returnsRouter);
 branchRouter.use('/purchase-orders', poRouter);
-// Day 17: '/transfers' ...
+branchRouter.use('/transfers', transfersRouter);

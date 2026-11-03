@@ -12,6 +12,7 @@ import { oid } from '../../lib/ids';
 import { escapeRegex } from '../../lib/regex';
 import type { Ctx } from '../../types/ctx';
 import { productHasStockHistory, stockAcrossMyBranches } from '../inventory/inventory.service';
+import { inTransitFor } from '../transfers/transfer.service';
 import { PRODUCT_CARD, toProductDto } from './catalog.dto';
 
 async function assertCategory(id: string) {
@@ -22,7 +23,8 @@ async function assertCategory(id: string) {
 export async function getProduct(ctx: Ctx, id: Types.ObjectId) {
   const p = await Product.findById(id).select(PRODUCT_CARD).lean();
   if (!p) throw notFound();
-  return { product: toProductDto(p), stock: await stockAcrossMyBranches(ctx, id) };
+  const [stock, inTransit] = await Promise.all([stockAcrossMyBranches(ctx, id), inTransitFor(ctx, id)]);
+  return { product: toProductDto(p), stock, inTransit }; // inTransit: "20 GUL → DHN" (FR-TRF-07)
 }
 
 export async function createProduct(ctx: Ctx, input: CreateProductInput) {

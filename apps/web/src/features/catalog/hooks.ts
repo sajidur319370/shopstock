@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import type { BranchStockDto, CategoryDto, ProductDto } from '@shopstock/shared';
+import type { BranchStockDto, CategoryDto, InTransitDto, ProductDto } from '@shopstock/shared';
 import { http } from '@/api/client';
 import { qk } from '@/api/keys';
 
@@ -14,7 +14,10 @@ export function useCategories() {
 export function useProduct(id: string | undefined) {
   return useQuery({
     queryKey: qk.product(id ?? ''),
-    queryFn: () => http.get<{ product: ProductDto; stock: BranchStockDto[] }>(`/products/${id}`),
+    queryFn: () =>
+      http.get<{ product: ProductDto; stock: BranchStockDto[]; inTransit: InTransitDto[] }>(
+        `/products/${id}`,
+      ),
     enabled: !!id,
   });
 }

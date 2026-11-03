@@ -29,7 +29,7 @@ import { badRequest, conflict, notFound } from '../../lib/errors';
 import { oid } from '../../lib/ids';
 import { notFoundOrInvalidState } from '../../lib/states';
 import type { BranchCtx } from '../../types/ctx';
-import { loadActiveProducts } from '../catalog/loadProducts';
+import { loadActiveProducts, reorderDefaults } from '../catalog/loadProducts';
 import { withStockChanges } from '../inventory/stock';
 import { lowStock } from '../inventory/lowStock.service';
 import { toPODto, toPORowDto } from './po.dto';
@@ -191,6 +191,7 @@ export async function receivePO(
     return { qty: l.qty, item, unitCost: l.unitCost ?? item.unitCost };
   });
 
+  const reorderLevels = await reorderDefaults(lines.map((l) => l.item.productId));
   const result = await withTransaction(async (session) => {
     const now = ctx.now();
     // 1. Claim this receipt id, check the state and the receipt limit: ONE atomic write, and the FIRST one.
@@ -247,6 +248,7 @@ export async function receivePO(
             qty: l.qty,
             unitCost: l.unitCost,
             type: 'purchase_receipt',
+            reorderDefault: reorderLevels.get(String(l.item.productId)), // a first stock-in creates the row
           });
         }
       },

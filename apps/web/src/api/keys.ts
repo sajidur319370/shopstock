@@ -26,4 +26,8 @@ export const qk = {
   pos: (code: string, f: object) => ['pos', code, f] as const,
   po: (code: string, id: string) => ['po', code, id] as const,
   poSuggestions: (code: string) => ['po-suggestions', code] as const,
+  // ['transfers', code] invalidates every list filter; a transfer is cached per viewing branch
+  transfers: (code: string, f: object) => ['transfers', code, f] as const,
+  transfer: (code: string, id: string) => ['transfer', code, id] as const,
+  transferDestinations: (code: string) => ['transfer-destinations', code] as const,
 };

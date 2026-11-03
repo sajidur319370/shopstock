@@ -61,6 +61,12 @@ describe('purchase orders: receiving (FR-PO-05)', () => {
     expect(await StockMovement.countDocuments({ branchId: s.gul._id, type: 'purchase_receipt' })).toBe(2);
   });
 
+  it('the first receipt at a branch creates the row with the product reorder level', async () => {
+    const { s, po: p } = await ordered(10); // no stock at GUL yet; the factory product's reorder level is 5
+    await receive(s.managerGul.token, 'GUL', p.id, [{ productId: s.product.id, qty: 3 }]);
+    expect(await gulInv(s)).toMatchObject({ quantity: 3, reorderLevel: 5 });
+  });
+
   it('a receipt of several lines writes one movement per line', async () => {
     const s = await shopWithStock(0);
     const rice = await makeProduct(s.owner.token, { categoryId: s.product.categoryId, name: 'Rice' });

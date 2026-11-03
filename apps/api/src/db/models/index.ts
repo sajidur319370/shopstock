@@ -11,3 +11,4 @@ export * from './sale.model';
 export * from './saleReturn.model';
 export * from './supplier.model';
 export * from './purchaseOrder.model';
+export * from './transfer.model';

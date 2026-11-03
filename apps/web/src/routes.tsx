@@ -34,6 +34,9 @@ import { ReceivePage } from '@/features/purchasing/ReceivePage';
 import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
 import { SupplierFormPage } from '@/features/suppliers/SupplierFormPage';
 import { SupplierDetailPage } from '@/features/suppliers/SupplierDetailPage';
+import { TransfersPage } from '@/features/transfers/TransfersPage';
+import { NewTransferPage } from '@/features/transfers/NewTransferPage';
+import { TransferDetailPage } from '@/features/transfers/TransferDetailPage';
 
 export function AppRoutes() {
   return (
@@ -142,7 +145,30 @@ export function AppRoutes() {
                     </RequirePermission>
                   }
                 />
-                <Route path="transfers" element={<ComingSoon title="Transfers" day={17} />} />
+                <Route
+                  path="transfers"
+                  element={
+                    <RequirePermission p="transfer:view">
+                      <TransfersPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="transfers/new"
+                  element={
+                    <RequirePermission p="transfer:manage">
+                      <NewTransferPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="transfers/:id"
+                  element={
+                    <RequirePermission p="transfer:view">
+                      <TransferDetailPage />
+                    </RequirePermission>
+                  }
+                />
               </Route>
 
               <Route
