@@ -11,6 +11,7 @@ export function useSale(code: string, saleId: string, initial?: SaleDto) {
     queryKey: qk.sale(code, saleId),
     queryFn: () => http.get<{ sale: SaleDto }>(`/b/${code}/sales/${saleId}`).then((r) => r.sale),
     initialData: initial, // straight from the POS: render the receipt without waiting for a round trip
+    enabled: !!saleId, // the return screen before an invoice is looked up
   });
 }
 

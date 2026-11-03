@@ -8,3 +8,4 @@ export * from './product.model';
 export * from './inventory.model';
 export * from './stockMovement.model';
 export * from './sale.model';
+export * from './saleReturn.model';

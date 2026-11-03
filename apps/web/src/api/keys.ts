@@ -17,4 +17,7 @@ export const qk = {
   sales: (code: string, f: object) => ['sales', code, f] as const,
   sale: (code: string, id: string) => ['sale', code, id] as const,
   shift: (code: string) => ['shift', code] as const,
+  // ['returns', code] invalidates every returns-list filter of that branch after a return
+  returns: (code: string, f: object) => ['returns', code, f] as const,
+  saleReturn: (code: string, id: string) => ['return', code, id] as const,
 };

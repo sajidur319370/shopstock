@@ -31,6 +31,7 @@ import { oid, pad6 } from '../../lib/ids';
 import { isDuplicateKey } from '../../lib/mongoErrors';
 import { discountCapFor, type BranchCtx } from '../../types/ctx';
 import { assertStockAvailable, withStockChanges } from '../inventory/stock';
+import { returnsForSale } from '../returns/return.service';
 import { toSaleDto, toSaleRowDto } from './sale.dto';
 
 export async function createSale(
@@ -215,18 +216,25 @@ export async function listSales(ctx: BranchCtx, f: SalesListQuery): Promise<Page
   };
 }
 
+/** Detail = the sale + (for those who may open them) links to its returns. */
+async function saleDetail(ctx: BranchCtx, sale: Parameters<typeof toSaleDto>[0]): Promise<SaleDto> {
+  const dto = toSaleDto(sale, ctx); // strips unitCost / totals.cost for cashiers (NFR-SEC-14)
+  if (can(ctx.role, 'return:view')) dto.returns = await returnsForSale(ctx, sale._id);
+  return dto;
+}
+
 /** §12.2: by id. Another branch's sale or another cashier's: the same 404. */
 export async function getSale(ctx: BranchCtx, id: Types.ObjectId): Promise<SaleDto> {
   const sale = await Sale.findOne({ _id: id, ...visibleTo(ctx) }).lean();
   if (!sale) throw notFound('Sale not found.');
-  return toSaleDto(sale, ctx); // strips unitCost / totals.cost for cashiers (NFR-SEC-14)
+  return saleDetail(ctx, sale);
 }
 
 /** §12.2: by invoice number (returns desk, history search). */
 export async function getSaleByInvoice(ctx: BranchCtx, invoiceNo: string): Promise<SaleDto> {
   const sale = await Sale.findOne({ invoiceNo: invoiceNo.toUpperCase(), ...visibleTo(ctx) }).lean();
   if (!sale) throw notFound('Sale not found.');
-  return toSaleDto(sale, ctx);
+  return saleDetail(ctx, sale);
 }
 
 /** §12.3 · FR-IVC-04: atomic $inc; the document BEFORE the update says whether this is the first print. */

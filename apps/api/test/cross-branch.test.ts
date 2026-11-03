@@ -58,7 +58,21 @@ export const PROBES: Probe[] = [
   { name: 'sale by invoice', method: 'get', path: () => '/api/b/DHN/sales/by-invoice/DHN-000001' },
   { name: 'mark printed', method: 'post', path: () => `/api/b/DHN/sales/${FAKE_ID}/printed` },
   { name: 'my shift summary', method: 'get', path: () => '/api/b/DHN/sales/my-summary' },
-  // Day 14+: returns, purchase orders, transfers, dashboard…
+  // Day 14: returns (a GUL return via DHN's URL, as the Owner: returns.test.ts)
+  {
+    name: 'create return',
+    method: 'post',
+    path: () => '/api/b/DHN/returns',
+    body: () => ({
+      clientReturnId: '3f2b1a4c-5d6e-4f70-8a9b-0c1d2e3f4a5c',
+      saleId: FAKE_ID,
+      reason: 'changed_mind',
+      lines: [{ saleLineId: FAKE_ID, qty: 1, restock: true }],
+    }),
+  },
+  { name: 'returns list', method: 'get', path: () => '/api/b/DHN/returns' },
+  { name: 'return detail', method: 'get', path: () => `/api/b/DHN/returns/${FAKE_ID}` },
+  // Day 15+: purchase orders, transfers, dashboard…
 ];
 
 describe('cross-branch isolation', () => {

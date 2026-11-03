@@ -4,6 +4,7 @@ import { bctx } from '../../middleware/branchCtx';
 import { getBranchByCode } from '../../lib/cache';
 import { inventoryRouter } from '../inventory/inventory.routes';
 import { posRouter } from '../pos/pos.routes';
+import { returnsRouter } from '../returns/return.routes';
 import { salesRouter } from '../sales/sale.routes';
 import { toBranchDto } from './branch.dto';
 
@@ -17,4 +18,5 @@ branchRouter.get('/', authorize('branch:view'), async (req, res) => {
 branchRouter.use(inventoryRouter); // /inventory, /adjustments, /stock-counts, /movements, /reconcile
 branchRouter.use('/sales', salesRouter);
 branchRouter.use('/pos', posRouter);
-// Day 14: '/returns' · Day 15: '/purchase-orders' · Day 17: '/transfers' ...
+branchRouter.use('/returns', returnsRouter);
+// Day 15: '/purchase-orders' · Day 17: '/transfers' ...

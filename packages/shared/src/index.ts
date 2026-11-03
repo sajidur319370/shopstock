@@ -13,3 +13,4 @@ export * from './schemas/staff';
 export * from './schemas/catalog';
 export * from './schemas/inventory';
 export * from './schemas/sale';
+export * from './schemas/return';

@@ -1,5 +1,13 @@
 import type { Currency } from './money';
-import type { AdjustmentReason, MovementType, PaymentMethod, RefType, Role, Unit } from './constants';
+import type {
+  AdjustmentReason,
+  MovementType,
+  PaymentMethod,
+  RefType,
+  ReturnReason,
+  Role,
+  Unit,
+} from './constants';
 import type { Discount } from './pricing';
 
 export type Id = string;
@@ -178,6 +186,15 @@ export interface SaleDto {
   printCount: number;
   businessDate: string;
   createdAt: string;
+  /** Detail only, and only with return:view: the returns made against this sale, oldest first. */
+  returns?: SaleReturnLinkDto[];
+}
+
+export interface SaleReturnLinkDto {
+  id: Id;
+  returnNo: string;
+  total: number;
+  createdAt: string;
 }
 /** One row of the sales history (no lines). */
 export interface SaleRowDto {
@@ -188,6 +205,58 @@ export interface SaleRowDto {
   itemCount: number;
   methods: PaymentMethod[];
   returnStatus: 'none' | 'partial' | 'full';
+  businessDate: string;
+  createdAt: string;
+}
+
+/** One returned line: the customer's exact share of the sale line (telescoping portions). */
+export interface ReturnLineDto {
+  saleLineId: Id;
+  productId: Id;
+  sku: string;
+  name: string;
+  qty: number;
+  unitPrice: number;
+  net: number;
+  tax: number;
+  total: number;
+  restock: boolean;
+  unitCost?: number; // Manager+ only (inventory:viewCost)
+  writeOffCost?: number; // Manager+ only
+}
+
+export interface ReturnDto {
+  id: Id;
+  returnNo: string; // 'GUL-R-000012'
+  saleId: Id;
+  invoiceNo: string;
+  items: ReturnLineDto[];
+  totals: {
+    net: number;
+    tax: number;
+    total: number;
+    itemCount: number;
+    costRestocked?: number; // Manager+ only
+    writeOff?: number; // Manager+ only
+  };
+  refund: { method: PaymentMethod; amount: number };
+  reason: ReturnReason;
+  note: string;
+  processedByName: string;
+  businessDate: string;
+  createdAt: string;
+}
+
+/** One row of the returns list (no lines). */
+export interface ReturnRowDto {
+  id: Id;
+  returnNo: string;
+  saleId: Id;
+  invoiceNo: string;
+  itemCount: number;
+  refund: { method: PaymentMethod; amount: number };
+  reason: ReturnReason;
+  processedByName: string;
   businessDate: string;
   createdAt: string;
 }

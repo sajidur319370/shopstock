@@ -25,6 +25,19 @@ async function stockedAtGul(s: Shop): Promise<Extra> {
   return { productId: p.id };
 }
 
+/** stockedAtGul + one unit sold by the Owner: a sale line to return. */
+async function soldAtGul(s: Shop): Promise<Extra> {
+  const { productId } = await stockedAtGul(s);
+  const res = await as(s.owner.token)
+    .post('/api/b/GUL/sales')
+    .send({
+      clientSaleId: randomUUID(),
+      lines: [{ productId, qty: 1 }],
+      payments: [{ method: 'cash', amount: 1_000_000 }],
+    });
+  return { saleId: res.body.sale.id, saleLineId: res.body.sale.items[0].id };
+}
+
 /** Every MUTATING endpoint. Branch routes use GUL. THIS LIST GROWS EVERY DAY. */
 export const ROWS: Row[] = [
   {
@@ -104,7 +117,20 @@ export const ROWS: Row[] = [
       payments: [{ method: 'cash', amount: 1_000_000 }],
     }),
   },
-  // Day 14+: returns, POs, transfers…
+  // Day 14: returns (Manager+)
+  {
+    method: 'post',
+    path: () => '/api/b/GUL/returns',
+    perm: 'return:create',
+    setup: soldAtGul,
+    body: (_s, x) => ({
+      clientReturnId: randomUUID(),
+      saleId: x.saleId,
+      reason: 'changed_mind',
+      lines: [{ saleLineId: x.saleLineId, qty: 1, restock: true }],
+    }),
+  },
+  // Day 15+: POs, transfers…
 ];
 
 const ACTORS = ['owner', 'managerGul', 'cashierGul'] as const;

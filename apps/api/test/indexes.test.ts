@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
-import { Inventory, Product, Sale, StockMovement } from '../src/db/models';
+import { Inventory, Product, Sale, SaleReturn, StockMovement } from '../src/db/models';
 
 /**
  * TR-10: hot queries must use an index and never sort in memory. Grows with every hot query.
@@ -64,5 +64,16 @@ describe('index usage', () => {
         .sort({ createdAt: -1, _id: -1 })
         .explain('queryPlanner'),
     );
+  });
+
+  it("the returns list is index-ordered; a sale's returns are an index seek", async () => {
+    const branchId = new Types.ObjectId();
+    assertIndexed(
+      await SaleReturn.find({ branchId }).sort({ createdAt: -1, _id: -1 }).explain('queryPlanner'),
+    );
+    // A sale has a handful of returns: sorting those in memory is fine, scanning the collection is not.
+    const plan = await SaleReturn.find({ branchId, saleId: new Types.ObjectId() }).explain('queryPlanner');
+    expect(JSON.stringify(plan)).toContain('IXSCAN');
+    expect(JSON.stringify(plan)).not.toContain('COLLSCAN');
   });
 });

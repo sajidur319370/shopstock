@@ -61,9 +61,9 @@ export function SaleDetailPage() {
               </Link>
             </Button>
           )}
-          {can('return:create') && (
-            <Button variant="outline" disabled title="Returns arrive on Day 14">
-              Return items
+          {can('return:create') && s.returnStatus !== 'full' && (
+            <Button variant="outline" asChild>
+              <Link to={`/b/${branch.code}/returns/new?sale=${s.id}`}>Return items</Link>
             </Button>
           )}
           <Button variant="ghost" asChild>
@@ -127,6 +127,24 @@ export function SaleDetailPage() {
             ))}
             {s.change > 0 && <Row label="Change given" value={money(s.change)} />}
           </dl>
+          {!!s.returns?.length && (
+            <>
+              <h2 className="mt-4 mb-2 font-medium">Returns</h2>
+              <dl className="space-y-1 tabular-nums">
+                {s.returns.map((r) => (
+                  <div key={r.id} className="flex justify-between">
+                    <dt>
+                      <Link className="font-mono underline" to={`/b/${branch.code}/returns/${r.id}`}>
+                        {r.returnNo}
+                      </Link>{' '}
+                      <span className="text-gray-500">{dateTime(r.createdAt)}</span>
+                    </dt>
+                    <dd>−{money(r.total)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
         </section>
         <dl className="space-y-1 text-sm tabular-nums">
           <Row label="Subtotal" value={money(t.subtotal)} />

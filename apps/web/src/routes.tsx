@@ -24,6 +24,9 @@ import { PosPage } from '@/features/pos/PosPage';
 import { ReceiptPage } from '@/features/sales/ReceiptPage';
 import { SaleDetailPage } from '@/features/sales/SaleDetailPage';
 import { SalesHistoryPage } from '@/features/sales/SalesHistoryPage';
+import { NewReturnPage } from '@/features/returns/NewReturnPage';
+import { ReturnDetailPage } from '@/features/returns/ReturnDetailPage';
+import { ReturnsPage } from '@/features/returns/ReturnsPage';
 
 export function AppRoutes() {
   return (
@@ -51,7 +54,30 @@ export function AppRoutes() {
                 <Route path="sales/:saleId" element={<SaleDetailPage />} />
                 <Route path="sales/:saleId/print" element={<ReceiptPage />} />
                 <Route path="dashboard" element={<ComingSoon title="Dashboard" day={18} />} />
-                <Route path="returns" element={<ComingSoon title="Returns" day={14} />} />
+                <Route
+                  path="returns"
+                  element={
+                    <RequirePermission p="return:view">
+                      <ReturnsPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="returns/new"
+                  element={
+                    <RequirePermission p="return:create">
+                      <NewReturnPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="returns/:returnId"
+                  element={
+                    <RequirePermission p="return:view">
+                      <ReturnDetailPage />
+                    </RequirePermission>
+                  }
+                />
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route
                   path="inventory/count"
