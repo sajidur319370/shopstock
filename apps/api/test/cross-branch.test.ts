@@ -114,7 +114,9 @@ export const PROBES: Probe[] = [
   { name: 'dispatch transfer', method: 'post', path: () => `/api/b/DHN/transfers/${FAKE_ID}/dispatch` },
   { name: 'receive transfer', method: 'post', path: () => `/api/b/DHN/transfers/${FAKE_ID}/receive` },
   { name: 'cancel transfer', method: 'post', path: () => `/api/b/DHN/transfers/${FAKE_ID}/cancel` },
-  // Day 18+: dashboard…
+  // Day 18: dashboard & low stock (the overview only ever lists the actor's branches: dashboard.test.ts)
+  { name: 'dashboard', method: 'get', path: () => '/api/b/DHN/dashboard' },
+  { name: 'low-stock list', method: 'get', path: () => '/api/b/DHN/low-stock' },
 ];
 
 describe('cross-branch isolation', () => {

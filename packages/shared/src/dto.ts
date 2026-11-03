@@ -398,6 +398,86 @@ export interface InTransitDto {
   qty: number;
 }
 
+/** A low or out-of-stock row at one branch. No costs: cashiers may see the list. */
+export interface LowStockRowDto {
+  productId: Id;
+  sku: string;
+  name: string;
+  unit: Unit;
+  categoryId: Id;
+  quantity: number;
+  reorderLevel: number;
+  status: 'low' | 'out';
+  suggestedQty: number; // max(2 × reorderLevel − quantity, 1)
+}
+
+export interface LowStockListDto {
+  items: LowStockRowDto[];
+  truncated: boolean; // more rows exist than the 500 returned (NFR-PERF-08: no unbounded arrays)
+}
+
+export interface LowStockSummaryDto {
+  lowCount: number;
+  outCount: number;
+  top: LowStockRowDto[]; // the 10 lowest, quantity ÷ reorderLevel ascending
+}
+
+/** FR-DSH-01: today (the shop's business date) at one branch, for Manager+. No costs or profit. */
+export interface BranchDashboardDto {
+  kind: 'branch';
+  today: string;
+  sales: { count: number; net: number; total: number; avgBasket: number };
+  /** Cash = collected (tendered − change), like the shift summary. Every method present, 0 if none. */
+  byMethod: Record<PaymentMethod, number>;
+  byHour: { hour: number; count: number; total: number }[]; // always 24 rows, shop time
+  refunds: { count: number; amount: number };
+  lowStock: LowStockSummaryDto;
+  incomingTransfers: {
+    id: Id;
+    transferNo: string;
+    fromCode: string;
+    units: number;
+    dispatchedAt: string | null;
+  }[];
+  outgoingPending: number;
+  openPOs: {
+    id: Id;
+    poNumber: string;
+    supplierName: string;
+    status: PoStatus;
+    expectedDate: string | null;
+  }[];
+  recentSales: { id: Id; invoiceNo: string; cashierName: string; total: number; createdAt: string }[];
+}
+
+/** FR-DSH-02: a cashier's own shift and the branch's low-stock count. Nobody else's numbers. */
+export interface ShiftDashboardDto {
+  kind: 'shift';
+  today: string;
+  shift: ShiftSummaryDto;
+  lowStockCount: number;
+}
+
+export type DashboardDto = BranchDashboardDto | ShiftDashboardDto;
+
+export interface OverviewRowDto {
+  branchId: Id;
+  code: string;
+  name: string;
+  isActive: boolean;
+  sales: { count: number; net: number; total: number };
+  lowCount: number;
+  outCount: number;
+  incomingTransfers: number;
+}
+
+/** FR-DSH-03: every branch the actor may see, plus shop totals. */
+export interface OverviewDto {
+  today: string;
+  branches: OverviewRowDto[];
+  totals: Omit<OverviewRowDto, 'branchId' | 'code' | 'name' | 'isActive'>;
+}
+
 /** "My shift today" for the cashier at the POS (FR-SAL-12). */
 export interface ShiftSummaryDto {
   businessDate: string;

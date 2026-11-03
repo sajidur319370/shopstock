@@ -48,6 +48,9 @@ export function useCompleteSale() {
       void qc.invalidateQueries({ queryKey: ['inventory', branch.code] });
       void qc.invalidateQueries({ queryKey: ['sales', branch.code] }); // history
       void qc.invalidateQueries({ queryKey: qk.shift(branch.code) }); // the POS shift card
+      void qc.invalidateQueries({ queryKey: ['dashboard', branch.code] }); // this tab's own action shows at once
+      void qc.invalidateQueries({ queryKey: ['low-stock', branch.code] });
+      void qc.invalidateQueries({ queryKey: ['overview'] });
       navigate(`/b/${branch.code}/sales/${sale.id}/print?from=pos`, { state: { sale } });
     },
     onError: (err) => {

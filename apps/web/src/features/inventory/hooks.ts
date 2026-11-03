@@ -11,6 +11,9 @@ export function useInvalidateStock(code: string) {
       qc.invalidateQueries({ queryKey: ['inventory-row', code] }),
       qc.invalidateQueries({ queryKey: ['movements', code] }),
       qc.invalidateQueries({ queryKey: ['product'] }), // "stock at my branches" on product detail
+      qc.invalidateQueries({ queryKey: ['dashboard', code] }),
+      qc.invalidateQueries({ queryKey: ['low-stock', code] }),
+      qc.invalidateQueries({ queryKey: ['overview'] }),
     ]);
 }
 

@@ -96,7 +96,14 @@ export function NewTransferPage() {
       try {
         const d = (await http.post<{ transfer: TransferDto }>(`${detail}/dispatch`)).transfer;
         qc.setQueryData(qk.transfer(branch.code, d.id), d);
-        for (const key of ['inventory', 'inventory-row', 'movements', 'pos-search']) {
+        for (const key of [
+          'inventory',
+          'inventory-row',
+          'movements',
+          'pos-search',
+          'dashboard',
+          'low-stock',
+        ]) {
           void qc.invalidateQueries({ queryKey: [key, branch.code] });
         }
         toast.success(`${d.transferNo} is on its way to ${d.toCode}.`);

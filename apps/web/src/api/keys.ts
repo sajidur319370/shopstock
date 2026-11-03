@@ -30,4 +30,8 @@ export const qk = {
   transfers: (code: string, f: object) => ['transfers', code, f] as const,
   transfer: (code: string, id: string) => ['transfer', code, id] as const,
   transferDestinations: (code: string) => ['transfer-destinations', code] as const,
+  // ['dashboard', code] / ['low-stock', code]: invalidated after this tab's own sales, returns, receipts, transfers
+  dashboard: (code: string) => ['dashboard', code] as const,
+  overview: ['overview'] as const,
+  lowStock: (code: string, f: object) => ['low-stock', code, f] as const,
 };

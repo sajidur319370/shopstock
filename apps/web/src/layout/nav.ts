@@ -9,13 +9,15 @@ export type NavItem = {
 
 /** One list, filtered by permission. Branch items get the current branch code. */
 export const NAV: NavItem[] = [
-  { label: 'POS', to: (c) => `/b/${c}/pos`, permission: 'sale:create', scope: 'branch' },
   { label: 'Dashboard', to: (c) => `/b/${c}/dashboard`, permission: 'dashboard:view', scope: 'branch' },
+  { label: 'POS', to: (c) => `/b/${c}/pos`, permission: 'sale:create', scope: 'branch' },
   { label: 'Sales', to: (c) => `/b/${c}/sales`, permission: 'sale:view', scope: 'branch' },
   { label: 'Returns', to: (c) => `/b/${c}/returns`, permission: 'return:view', scope: 'branch' },
   { label: 'Inventory', to: (c) => `/b/${c}/inventory`, permission: 'inventory:view', scope: 'branch' },
+  { label: 'Low stock', to: (c) => `/b/${c}/low-stock`, permission: 'inventory:view', scope: 'branch' },
   { label: 'Purchase orders', to: (c) => `/b/${c}/purchase-orders`, permission: 'po:view', scope: 'branch' },
   { label: 'Transfers', to: (c) => `/b/${c}/transfers`, permission: 'transfer:view', scope: 'branch' },
+  { label: 'Overview', to: () => '/overview', permission: 'report:view', scope: 'shop' },
   { label: 'Products', to: () => '/catalog/products', permission: 'catalog:manage', scope: 'shop' },
   { label: 'Suppliers', to: () => '/suppliers', permission: 'supplier:view', scope: 'shop' },
   { label: 'Reports', to: () => '/reports', permission: 'report:view', scope: 'shop' },

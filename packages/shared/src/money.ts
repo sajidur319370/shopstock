@@ -38,3 +38,13 @@ export function formatMoney(minor: number, c: Currency): string {
 
 /** 1000 → '10%', 750 → '7.5%' */
 export const formatBps = (bps: number) => `${(bps / 100).toString()}%`;
+
+/**
+ * round_half_up(a / b) for integers a ≥ 0, b > 0, without floats (MongoDB's $round is half-to-even,
+ * so averages are divided here, not in a pipeline). Returns 0 when b is 0. A signed value (a margin
+ * that is a loss) is the caller's job: sign × divRoundHalfUp(|a|, b).
+ */
+export function divRoundHalfUp(a: number, b: number): number {
+  if (b === 0) return 0;
+  return Math.floor((2 * a + b) / (2 * b));
+}

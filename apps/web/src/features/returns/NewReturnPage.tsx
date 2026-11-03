@@ -157,6 +157,9 @@ function ReturnForm({ sale, refetch }: { sale: SaleDto; refetch: () => void }) {
       void qc.invalidateQueries({ queryKey: ['inventory-row', branch.code] });
       void qc.invalidateQueries({ queryKey: ['movements', branch.code] });
       void qc.invalidateQueries({ queryKey: ['pos-search', branch.code] });
+      void qc.invalidateQueries({ queryKey: ['dashboard', branch.code] }); // this tab's own action shows at once
+      void qc.invalidateQueries({ queryKey: ['low-stock', branch.code] });
+      void qc.invalidateQueries({ queryKey: ['overview'] });
       navigate(`/b/${branch.code}/returns/${r.id}`, { state: { ret: r } });
     },
     onError: (err) => {

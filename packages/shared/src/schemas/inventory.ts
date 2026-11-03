@@ -62,3 +62,10 @@ export type AdjustmentInput = z.infer<typeof adjustmentSchema>;
 export type StockCountInput = z.infer<typeof stockCountSchema>;
 export type InventoryListQuery = z.infer<typeof inventoryListQuery>;
 export type MovementQuery = z.infer<typeof movementQuery>;
+
+/** GET /b/:code/low-stock (FR-DSH-05). */
+export const lowStockQuery = z.object({
+  status: z.enum(['low', 'out']).optional(),
+  categoryId: objectIdSchema.optional(),
+});
+export type LowStockQuery = z.infer<typeof lowStockQuery>;

@@ -37,6 +37,9 @@ import { SupplierDetailPage } from '@/features/suppliers/SupplierDetailPage';
 import { TransfersPage } from '@/features/transfers/TransfersPage';
 import { NewTransferPage } from '@/features/transfers/NewTransferPage';
 import { TransferDetailPage } from '@/features/transfers/TransferDetailPage';
+import { DashboardPage } from '@/features/dashboard/DashboardPage';
+import { LowStockPage } from '@/features/dashboard/LowStockPage';
+import { OverviewPage } from '@/features/dashboard/OverviewPage';
 
 export function AppRoutes() {
   return (
@@ -50,6 +53,14 @@ export function AppRoutes() {
             <Route element={<AppShell />}>
               <Route path="/" element={<HomeRedirect />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/overview"
+                element={
+                  <RequirePermission p="report:view">
+                    <OverviewPage />
+                  </RequirePermission>
+                }
+              />
 
               <Route path="/b/:branchCode" element={<BranchLayout />}>
                 <Route
@@ -63,7 +74,22 @@ export function AppRoutes() {
                 <Route path="sales" element={<SalesHistoryPage />} />
                 <Route path="sales/:saleId" element={<SaleDetailPage />} />
                 <Route path="sales/:saleId/print" element={<ReceiptPage />} />
-                <Route path="dashboard" element={<ComingSoon title="Dashboard" day={18} />} />
+                <Route
+                  path="dashboard"
+                  element={
+                    <RequirePermission p="dashboard:view">
+                      <DashboardPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="low-stock"
+                  element={
+                    <RequirePermission p="inventory:view">
+                      <LowStockPage />
+                    </RequirePermission>
+                  }
+                />
                 <Route
                   path="returns"
                   element={

@@ -11,6 +11,7 @@ import { branchRouter } from './modules/branches/branch.scoped.routes';
 import { staffRouter } from './modules/staff/staff.routes';
 import { categoriesRouter, productsRouter } from './modules/catalog/catalog.routes';
 import { suppliersRouter } from './modules/suppliers/supplier.routes';
+import { overviewRouter } from './modules/dashboard/dashboard.routes';
 
 export const apiRouter = Router();
 apiRouter.use('/setup', setupRouter); // guest
@@ -25,4 +26,5 @@ apiRouter.use('/staff', staffRouter);
 apiRouter.use('/categories', categoriesRouter);
 apiRouter.use('/products', productsRouter);
 apiRouter.use('/suppliers', suppliersRouter);
+apiRouter.use('/dashboard', overviewRouter);
 apiRouter.use('/b/:branchCode', resolveBranch, branchRouter); // POS, inventory, sales, POs, transfers…

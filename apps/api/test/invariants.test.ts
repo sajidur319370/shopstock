@@ -189,7 +189,9 @@ async function expectConservation(w: World) {
     const inTransit = t?.qty ?? 0;
     // sales are negative movements, receipts/returns/found positive, damaged negative
     const external = (by.purchase_receipt ?? 0) + (by.adjustment ?? 0) + (by.return ?? 0) + (by.sale ?? 0);
-    const transferred = -(by.transfer_out ?? 0) - (by.transfer_in ?? 0); // out is negative
+    // out is negative. Written as 0 − out − in, NOT −out − in: with no transfers at all, −(0) is −0,
+    // and toBe (Object.is) says −0 ≠ 0. Which products saw no dispatch depends on the interleaving.
+    const transferred = 0 - (by.transfer_out ?? 0) - (by.transfer_in ?? 0);
 
     expect(rows.every((row) => row.quantity >= 0)).toBe(true);
     expect(transferred, `${p.name}: units that left minus units that arrived = in transit`).toBe(inTransit);

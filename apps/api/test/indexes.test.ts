@@ -89,6 +89,24 @@ describe('index usage', () => {
     );
   });
 
+  it("the dashboard's 'today' match uses { branchId, businessDate } (sales and returns)", async () => {
+    const f = { branchId: new Types.ObjectId(), businessDate: '2026-11-03' };
+    for (const plan of [
+      await Sale.aggregate([{ $match: f }, { $group: { _id: null, n: { $sum: 1 } } }]).explain(
+        'queryPlanner',
+      ),
+      await SaleReturn.aggregate([{ $match: f }, { $group: { _id: null, n: { $sum: 1 } } }]).explain(
+        'queryPlanner',
+      ),
+    ]) {
+      const text = JSON.stringify(plan);
+      // IXSCAN, or a COUNT_SCAN (index only) when the optimizer sees a pure count
+      expect(text).toMatch(/IXSCAN|COUNT_SCAN/);
+      expect(text).not.toContain('COLLSCAN');
+      expect(text).toMatch(/branchId_1_businessDate_1/);
+    }
+  });
+
   it('the transfers list is index-ordered: incoming, outgoing, both, and by status', async () => {
     const branchId = new Types.ObjectId();
     const newest = { createdAt: -1, _id: -1 } as const;

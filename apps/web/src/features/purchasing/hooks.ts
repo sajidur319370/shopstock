@@ -44,6 +44,9 @@ export function usePOMutation<V, R extends { purchaseOrder: PODto }>(id: string,
       void qc.invalidateQueries({ queryKey: ['po-suggestions', branch.code] });
       void qc.invalidateQueries({ queryKey: ['pos-search', branch.code] });
       void qc.invalidateQueries({ queryKey: ['supplier'] }); // "recent POs" on supplier pages
+      void qc.invalidateQueries({ queryKey: ['dashboard', branch.code] }); // this tab's own action shows at once
+      void qc.invalidateQueries({ queryKey: ['low-stock', branch.code] });
+      void qc.invalidateQueries({ queryKey: ['overview'] });
     },
   });
 }

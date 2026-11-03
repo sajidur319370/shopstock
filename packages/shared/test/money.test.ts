@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatMoney, fromMinor, toMinor } from '../src/money';
+import { divRoundHalfUp, formatMoney, fromMinor, toMinor } from '../src/money';
 import { addMonths, daysBetween, toBusinessDate } from '../src/dates';
 
 const BDT = { code: 'BDT', symbol: '৳', minorUnits: 2 };
@@ -35,5 +35,28 @@ describe('dates', () => {
     expect(daysBetween('2026-10-01', '2026-10-31')).toBe(30);
     expect(addMonths('2026-01', -1)).toBe('2025-12');
     expect(addMonths('2026-11', 2)).toBe('2027-01');
+  });
+});
+
+describe('divRoundHalfUp', () => {
+  it.each([
+    [63525, 2, 31763], // queries.md §22.2, DHN 10-03: .5 rounds UP (half-to-even would give 31762)
+    [5, 2, 3],
+    [4, 3, 1],
+    [5, 3, 2],
+    [55500, 2, 27750],
+    [0, 7, 0],
+    [7, 0, 0], // no sales yet: an average of 0, not NaN
+  ])('%i / %i → %i', (a, b, expected) => {
+    expect(divRoundHalfUp(a, b)).toBe(expected);
+  });
+
+  it('matches exact rational rounding for many pairs (no float drift)', () => {
+    for (let b = 1; b <= 50; b++) {
+      for (let a = 0; a <= 500; a++) {
+        const exact = Number((BigInt(2 * a + b) / BigInt(2 * b)).toString());
+        expect(divRoundHalfUp(a, b)).toBe(exact);
+      }
+    }
   });
 });

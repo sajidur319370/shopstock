@@ -42,10 +42,13 @@ export function useTransferAction() {
         'movements',
         'pos-search',
         'po-suggestions',
+        'dashboard',
+        'low-stock',
       ]) {
         void qc.invalidateQueries({ queryKey: [key, branch.code] });
       }
       void qc.invalidateQueries({ queryKey: ['product'] }); // "In transit" on product pages
+      void qc.invalidateQueries({ queryKey: ['overview'] });
     },
   });
 }
