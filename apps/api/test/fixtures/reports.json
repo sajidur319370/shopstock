@@ -1,0 +1,103 @@
+{
+  "daily": [
+    {
+      "day": "2026-10-01",
+      "sales": 3,
+      "gross": 210000,
+      "discount": 6000,
+      "netSales": 204000,
+      "tax": 10200,
+      "total": 214200,
+      "refunds": 0,
+      "collected": 214200
+    },
+    {
+      "day": "2026-10-02",
+      "sales": 3,
+      "gross": 210000,
+      "discount": 0,
+      "netSales": 210000,
+      "tax": 10500,
+      "total": 220500,
+      "refunds": 0,
+      "collected": 220500
+    },
+    {
+      "day": "2026-10-03",
+      "sales": 3,
+      "gross": 98000,
+      "discount": 2500,
+      "netSales": 85500,
+      "tax": 4275,
+      "total": 100275,
+      "refunds": 10500,
+      "collected": 89775
+    }
+  ],
+  "dailyBranch": {
+    "GUL|2026-10-03": { "netSales": 25000, "tax": 1250, "collected": 26250 },
+    "DHN|2026-10-03": { "avgBasket": 31763 }
+  },
+  "bestSellers": [
+    { "sku": "P2", "qty": 19, "revenue": 221000, "cost": 171000, "profit": 50000 },
+    { "sku": "P3", "qty": 14, "revenue": 70000, "cost": 42000, "profit": 28000 },
+    { "sku": "P1", "qty": 7, "revenue": 208500, "cost": 140000, "profit": 68500 }
+  ],
+  "bestSellersOrder": {
+    "qty": ["P2", "P3", "P1"],
+    "revenue": ["P2", "P1", "P3"],
+    "profit": ["P1", "P2", "P3"]
+  },
+  "profit": {
+    "GUL": {
+      "netSales": 229000,
+      "cogs": 162000,
+      "grossProfit": 67000,
+      "marginBps": 2926,
+      "shrinkage": 0,
+      "profitAfterShrinkage": 67000
+    },
+    "DHN": {
+      "netSales": 270500,
+      "cogs": 191000,
+      "grossProfit": 79500,
+      "marginBps": 2939,
+      "shrinkage": -20000,
+      "profitAfterShrinkage": 59500
+    },
+    "total": {
+      "netSales": 499500,
+      "cogs": 353000,
+      "grossProfit": 146500,
+      "marginBps": 2933,
+      "shrinkage": -20000,
+      "profitAfterShrinkage": 126500
+    }
+  },
+  "monthly": {
+    "GUL": [
+      { "month": "2026-08", "netSales": 0, "grossProfit": 0, "sales": 0, "growthBps": null, "movingAvg3": 0 },
+      { "month": "2026-09", "netSales": 0, "grossProfit": 0, "sales": 0, "growthBps": null, "movingAvg3": 0 },
+      {
+        "month": "2026-10",
+        "netSales": 229000,
+        "grossProfit": 67000,
+        "sales": 5,
+        "growthBps": null,
+        "movingAvg3": 76333
+      }
+    ],
+    "DHN": [
+      { "month": "2026-08", "netSales": 0, "grossProfit": 0, "sales": 0, "growthBps": null, "movingAvg3": 0 },
+      { "month": "2026-09", "netSales": 0, "grossProfit": 0, "sales": 0, "growthBps": null, "movingAvg3": 0 },
+      {
+        "month": "2026-10",
+        "netSales": 270500,
+        "grossProfit": 79500,
+        "sales": 4,
+        "growthBps": null,
+        "movingAvg3": 90167
+      }
+    ]
+  }
+}

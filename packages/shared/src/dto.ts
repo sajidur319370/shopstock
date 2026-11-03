@@ -478,6 +478,85 @@ export interface OverviewDto {
   totals: Omit<OverviewRowDto, 'branchId' | 'code' | 'name' | 'isActive'>;
 }
 
+/* ---------- Reports (FR-RPT, queries.md §18–20). All money in minor units; margins in bps. ---------- */
+
+export interface ReportBranchDto {
+  branchId: Id;
+  code: string;
+  name: string;
+}
+
+/** One (day, branch) or all-branches row. netSales/tax are net of the day's returns; total is gross of them. */
+export interface DailySums {
+  sales: number;
+  gross: number;
+  discount: number;
+  netSales: number;
+  tax: number;
+  total: number;
+  refundCount: number;
+  refunds: number;
+  collected: number; // total − refunds
+  avgBasket: number; // round_half_up(total / sales)
+}
+
+export interface DailySalesDto {
+  branches: ReportBranchDto[];
+  days: { day: string; all: DailySums; branches: (DailySums & { branchId: Id; code: string })[] }[];
+  totals: DailySums; // the period, all branches (table footer)
+}
+
+export interface BestSellerRowDto {
+  productId: Id;
+  sku: string;
+  name: string;
+  categoryId: Id | null;
+  qty: number;
+  revenue: number; // net of discounts and of returns in the period
+  cost: number;
+  profit: number;
+  marginBps: number; // negative when sold at a loss
+}
+
+export interface BestSellersDto {
+  branches: ReportBranchDto[];
+  rows: BestSellerRowDto[];
+}
+
+export interface ProfitRowDto {
+  sales: number;
+  returns: number;
+  netSales: number;
+  cogs: number;
+  refunds: number;
+  grossProfit: number;
+  marginBps: number;
+  shrinkage: number; // negative = loss
+  profitAfterShrinkage: number;
+}
+
+export interface ProfitDto {
+  rows: (ProfitRowDto & { branchId: Id; code: string; name: string })[];
+  total: ProfitRowDto; // summed columns; the margin recomputed from the sums, never averaged
+}
+
+export interface MonthRowDto {
+  month: string; // 'YYYY-MM'
+  netSales: number;
+  grossProfit: number;
+  sales: number;
+  total: number;
+  avgBasket: number;
+  growthBps: number | null; // vs the previous month; null when that was 0 (undefined, not infinite)
+  movingAvg3: number; // net sales, this and the two previous months
+}
+
+export interface MonthlyDto {
+  branches: ReportBranchDto[];
+  perBranch: (ReportBranchDto & { months: MonthRowDto[] })[];
+  shop: MonthRowDto[];
+}
+
 /** "My shift today" for the cashier at the POS (FR-SAL-12). */
 export interface ShiftSummaryDto {
   businessDate: string;

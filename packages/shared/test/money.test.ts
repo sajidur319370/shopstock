@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { divRoundHalfUp, formatMoney, fromMinor, toMinor } from '../src/money';
+import { divRoundHalfUp, formatMoney, fromMinor, signedDiv, toMinor } from '../src/money';
 import { addMonths, daysBetween, toBusinessDate } from '../src/dates';
 
 const BDT = { code: 'BDT', symbol: '৳', minorUnits: 2 };
@@ -58,5 +58,15 @@ describe('divRoundHalfUp', () => {
         expect(divRoundHalfUp(a, b)).toBe(exact);
       }
     }
+  });
+});
+
+describe('signedDiv', () => {
+  it('rounds the magnitude half up and keeps the sign (a loss stays a loss)', () => {
+    expect(signedDiv(670_000_000, 229_000)).toBe(2926); // GUL margin, queries.md §22.4
+    expect(signedDiv(-5, 2)).toBe(-3); // not −2: half up on the magnitude
+    expect(signedDiv(-4, 3)).toBe(-1);
+    expect(signedDiv(0, 9)).toBe(0);
+    expect(Object.is(signedDiv(0, 9), 0)).toBe(true); // +0, never −0
   });
 });

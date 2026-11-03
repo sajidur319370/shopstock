@@ -48,3 +48,7 @@ export function divRoundHalfUp(a: number, b: number): number {
   if (b === 0) return 0;
   return Math.floor((2 * a + b) / (2 * b));
 }
+
+/** sign(a) × round_half_up(|a| / b) for b > 0: margins and growth can be negative (a loss, a drop). */
+export const signedDiv = (a: number, b: number): number =>
+  a < 0 ? -divRoundHalfUp(-a, b) : divRoundHalfUp(a, b);

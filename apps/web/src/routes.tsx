@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Route, Routes } from 'react-router';
 import { RequireAuth, RequirePasswordOk, RequireSetupDone } from '@/features/auth/gates';
 import { SetupPage } from '@/features/setup/SetupPage';
@@ -5,7 +6,6 @@ import { LoginPage } from '@/features/auth/LoginPage';
 import { ChangePasswordPage } from '@/features/auth/ChangePasswordPage';
 import { ProfilePage } from '@/features/auth/ProfilePage';
 import { NotFoundPage } from '@/components/NotFoundPage';
-import { ComingSoon } from '@/components/ComingSoon';
 import { RequirePermission } from '@/components/RequirePermission';
 import { AppShell } from '@/layout/AppShell';
 import { BranchLayout } from '@/features/branch/BranchLayout';
@@ -40,6 +40,10 @@ import { TransferDetailPage } from '@/features/transfers/TransferDetailPage';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { LowStockPage } from '@/features/dashboard/LowStockPage';
 import { OverviewPage } from '@/features/dashboard/OverviewPage';
+import { Skeleton } from '@/components/ui/skeleton';
+import { lazyWithReload } from '@/lib/lazyWithReload';
+
+const ReportsPage = lazyWithReload(() => import('@/features/reports/ReportsPage'));
 
 export function AppRoutes() {
   return (
@@ -240,7 +244,17 @@ export function AppRoutes() {
                   </RequirePermission>
                 }
               />
-              <Route path="/reports" element={<ComingSoon title="Reports" day={19} />} />
+              <Route
+                path="/reports"
+                element={
+                  <RequirePermission p="report:view">
+                    {/* its own chunk, with Recharts: the POS bundle stays small (NFR-PERF-07) */}
+                    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                      <ReportsPage />
+                    </Suspense>
+                  </RequirePermission>
+                }
+              />
               <Route
                 path="/admin/branches"
                 element={

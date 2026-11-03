@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { can, type Permission } from '@shopstock/shared';
+import { can, PERMISSIONS, type Permission } from '@shopstock/shared';
 import { as } from './helpers/auth';
 import { makeShop, type Shop } from './factories/shop';
 import { makeCategory, makeProduct } from './factories/catalog';
@@ -156,6 +156,23 @@ export const ROWS: Row[] = [
       payments: [{ method: 'cash', amount: 1_000_000 }],
     }),
   },
+  // Day 13: print count (every role; cashiers only see their OWN sales, so the cashier makes it)
+  {
+    method: 'post',
+    path: (_s, x) => `/api/b/GUL/sales/${x.saleId}/printed`,
+    perm: 'invoice:print',
+    setup: async (s) => {
+      const { productId } = await stockedAtGul(s);
+      const res = await as(s.cashierGul.token)
+        .post('/api/b/GUL/sales')
+        .send({
+          clientSaleId: randomUUID(),
+          lines: [{ productId, qty: 1 }],
+          payments: [{ method: 'cash', amount: 1_000_000 }],
+        });
+      return { saleId: res.body.sale.id };
+    },
+  },
   // Day 14: returns (Manager+)
   {
     method: 'post',
@@ -254,6 +271,9 @@ export const ROWS: Row[] = [
   // Day 18+: …
 ];
 
+/** Permissions that guard reads or shape responses, not a mutating endpoint. */
+const NOT_MUTATING: Permission[] = ['inventory:viewCost', 'sale:viewAll', 'reconcile:run'];
+
 const ACTORS = ['owner', 'managerGul', 'cashierGul'] as const;
 const roleOf = { owner: 'owner', managerGul: 'manager', cashierGul: 'cashier' } as const;
 
@@ -272,6 +292,12 @@ describe('RBAC matrix', () => {
     }
   }
 
-  // Turned on at the end of Day 19, when every mutating endpoint exists:
-  it.todo('every non-view permission in PERMISSIONS appears in at least one row');
+  // Turned on on Day 19, when every mutating endpoint exists. If it fails, it names the permission
+  // whose endpoint has no row: add the row, don't add the permission to NOT_MUTATING to make it pass.
+  it('every mutating permission is covered by at least one row', () => {
+    const unused = (Object.keys(PERMISSIONS) as Permission[])
+      .filter((p) => !p.endsWith(':view') && !NOT_MUTATING.includes(p))
+      .filter((p) => !ROWS.some((r) => r.perm === p));
+    expect(unused).toEqual([]);
+  });
 });
