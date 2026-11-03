@@ -1,6 +1,14 @@
 import { Types } from 'mongoose';
 import { describe, expect, it } from 'vitest';
-import { Inventory, Product, Sale, SaleReturn, StockMovement } from '../src/db/models';
+import {
+  Inventory,
+  Product,
+  PurchaseOrder,
+  Sale,
+  SaleReturn,
+  StockMovement,
+  Supplier,
+} from '../src/db/models';
 
 /**
  * TR-10: hot queries must use an index and never sort in memory. Grows with every hot query.
@@ -62,6 +70,28 @@ describe('index usage', () => {
     assertIndexed(
       await Sale.find({ branchId, cashierId: new Types.ObjectId() })
         .sort({ createdAt: -1, _id: -1 })
+        .explain('queryPlanner'),
+    );
+  });
+
+  it('the PO list is index-ordered, with or without a status/supplier filter', async () => {
+    const branchId = new Types.ObjectId();
+    const newest = { createdAt: -1, _id: -1 } as const;
+    assertIndexed(await PurchaseOrder.find({ branchId }).sort(newest).explain('queryPlanner'));
+    assertIndexed(
+      await PurchaseOrder.find({ branchId, status: 'ordered' }).sort(newest).explain('queryPlanner'),
+    );
+    assertIndexed(
+      await PurchaseOrder.find({ branchId, supplierId: new Types.ObjectId() })
+        .sort(newest)
+        .explain('queryPlanner'),
+    );
+  });
+
+  it('suppliers: A→Z active list and prefix search use an index', async () => {
+    assertIndexed(
+      await Supplier.find({ isActive: true, nameLower: { $regex: '^meg' } })
+        .sort({ nameLower: 1 })
         .explain('queryPlanner'),
     );
   });

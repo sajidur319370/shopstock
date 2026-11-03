@@ -72,7 +72,36 @@ export const PROBES: Probe[] = [
   },
   { name: 'returns list', method: 'get', path: () => '/api/b/DHN/returns' },
   { name: 'return detail', method: 'get', path: () => `/api/b/DHN/returns/${FAKE_ID}` },
-  // Day 15+: purchase orders, transfers, dashboard…
+  // Day 15: purchase orders (a DHN PO via GUL's URL: purchasing.test.ts)
+  { name: 'PO list', method: 'get', path: () => '/api/b/DHN/purchase-orders' },
+  { name: 'PO suggestions', method: 'get', path: () => '/api/b/DHN/purchase-orders/suggestions' },
+  { name: 'PO detail', method: 'get', path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}` },
+  {
+    name: 'create PO',
+    method: 'post',
+    path: () => '/api/b/DHN/purchase-orders',
+    body: () => ({ supplierId: FAKE_ID, lines: [{ productId: FAKE_ID, orderedQty: 1, unitCost: 1 }] }),
+  },
+  {
+    name: 'edit PO',
+    method: 'patch',
+    path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}`,
+    body: () => ({ notes: 'x' }),
+  },
+  { name: 'delete PO', method: 'delete', path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}` },
+  { name: 'order PO', method: 'post', path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}/order` },
+  { name: 'cancel PO', method: 'post', path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}/cancel` },
+  { name: 'close PO', method: 'post', path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}/close` },
+  {
+    name: 'receive PO',
+    method: 'post',
+    path: () => `/api/b/DHN/purchase-orders/${FAKE_ID}/receive`,
+    body: () => ({
+      clientReceiptId: '3f2b1a4c-5d6e-4f70-8a9b-0c1d2e3f4a5d',
+      lines: [{ productId: FAKE_ID, qty: 1 }],
+    }),
+  },
+  // Day 17+: transfers, dashboard…
 ];
 
 describe('cross-branch isolation', () => {

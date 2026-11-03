@@ -9,3 +9,5 @@ export * from './inventory.model';
 export * from './stockMovement.model';
 export * from './sale.model';
 export * from './saleReturn.model';
+export * from './supplier.model';
+export * from './purchaseOrder.model';

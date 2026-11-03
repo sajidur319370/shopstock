@@ -38,6 +38,34 @@ async function soldAtGul(s: Shop): Promise<Extra> {
   return { saleId: res.body.sale.id, saleLineId: res.body.sale.items[0].id };
 }
 
+/** A supplier, a product and (unless 'none') a GUL PO of 5 in the given state, made by the Owner. */
+const poAtGul =
+  (state: 'none' | 'draft' | 'ordered' | 'partially_received') =>
+  async (s: Shop): Promise<Extra> => {
+    const cat = await makeCategory(s.owner.token);
+    const p = await makeProduct(s.owner.token, { categoryId: cat.id });
+    const sup = (
+      await as(s.owner.token)
+        .post('/api/suppliers')
+        .send({ name: `Sup ${randomUUID()}` })
+    ).body.supplier;
+    const x: Extra = { supplierId: sup.id, productId: p.id };
+    if (state === 'none') return x;
+    const base = '/api/b/GUL/purchase-orders';
+    const po = (
+      await as(s.owner.token)
+        .post(base)
+        .send({ supplierId: sup.id, lines: [{ productId: p.id, orderedQty: 5, unitCost: 100 }] })
+    ).body.purchaseOrder;
+    if (state !== 'draft') await as(s.owner.token).post(`${base}/${po.id}/order`);
+    if (state === 'partially_received') {
+      await as(s.owner.token)
+        .post(`${base}/${po.id}/receive`)
+        .send({ clientReceiptId: randomUUID(), lines: [{ productId: p.id, qty: 1 }] });
+    }
+    return { ...x, poId: po.id };
+  };
+
 /** Every MUTATING endpoint. Branch routes use GUL. THIS LIST GROWS EVERY DAY. */
 export const ROWS: Row[] = [
   {
@@ -130,7 +158,57 @@ export const ROWS: Row[] = [
       lines: [{ saleLineId: x.saleLineId, qty: 1, restock: true }],
     }),
   },
-  // Day 15+: POs, transfers…
+  // Day 15: suppliers & purchase orders (Manager+)
+  {
+    method: 'post',
+    path: () => '/api/suppliers',
+    perm: 'supplier:manage',
+    body: () => ({ name: `Sup ${Math.random()}` }),
+  },
+  {
+    method: 'patch',
+    path: (_s, x) => `/api/suppliers/${x.supplierId}`,
+    perm: 'supplier:manage',
+    setup: poAtGul('none'),
+    body: () => ({ phone: '01700000000' }),
+  },
+  {
+    method: 'post',
+    path: () => '/api/b/GUL/purchase-orders',
+    perm: 'po:manage',
+    setup: poAtGul('none'),
+    body: (_s, x) => ({
+      supplierId: x.supplierId,
+      lines: [{ productId: x.productId, orderedQty: 1, unitCost: 100 }],
+    }),
+  },
+  ...(['patch', 'delete'] as const).map((method): Row => ({
+    method,
+    path: (_s, x) => `/api/b/GUL/purchase-orders/${x.poId}`,
+    perm: 'po:manage',
+    setup: poAtGul('draft'),
+    body: () => ({ notes: 'rbac' }),
+  })),
+  ...(['order', 'cancel'] as const).map((action): Row => ({
+    method: 'post',
+    path: (_s, x) => `/api/b/GUL/purchase-orders/${x.poId}/${action}`,
+    perm: 'po:manage',
+    setup: poAtGul('draft'),
+  })),
+  {
+    method: 'post',
+    path: (_s, x) => `/api/b/GUL/purchase-orders/${x.poId}/close`,
+    perm: 'po:manage',
+    setup: poAtGul('partially_received'),
+  },
+  {
+    method: 'post',
+    path: (_s, x) => `/api/b/GUL/purchase-orders/${x.poId}/receive`,
+    perm: 'po:receive',
+    setup: poAtGul('ordered'),
+    body: (_s, x) => ({ clientReceiptId: randomUUID(), lines: [{ productId: x.productId, qty: 1 }] }),
+  },
+  // Day 17+: transfers…
 ];
 
 const ACTORS = ['owner', 'managerGul', 'cashierGul'] as const;

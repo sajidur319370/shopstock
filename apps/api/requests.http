@@ -146,3 +146,77 @@ Authorization: Bearer {{token}}
 ### Product list A→Z
 GET {{base}}/products
 Authorization: Bearer {{token}}
+
+# ─────────────────────────── Day 15: suppliers & a purchase order ───────────────────────────
+# Top to bottom: supplier → draft → order → receive 7 → receive the same delivery again (replayed) → receive 3.
+
+### Find Soybean Oil by barcode (the PO line below uses its id)
+# @name oilLookup
+GET {{base}}/products/search?q=8941100500017
+Authorization: Bearer {{token}}
+
+###
+@oilId1L = {{oilLookup.response.body.exactId}}
+
+### Supplier
+# @name supplier
+POST {{base}}/suppliers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "Meghna Distributors", "contactName": "Rahim", "phone": "01711-000000" }
+
+###
+@supplierId = {{supplier.response.body.supplier.id}}
+
+### Low-stock suggestions at GUL (suggestedQty = max(2 × reorderLevel − on hand, 1))
+GET {{base}}/b/GUL/purchase-orders/suggestions
+Authorization: Bearer {{token}}
+
+### Draft PO: 10 × Soybean Oil @ ৳160.00
+# @name po
+POST {{base}}/b/GUL/purchase-orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "supplierId": "{{supplierId}}", "lines": [{ "productId": "{{oilId1L}}", "orderedQty": 10, "unitCost": 16000 }] }
+
+###
+@poId = {{po.response.body.purchaseOrder.id}}
+
+### Order it (draft → ordered)
+POST {{base}}/b/GUL/purchase-orders/{{poId}}/order
+Authorization: Bearer {{token}}
+
+### Receive 7 (→ partially_received). Run it TWICE: the second answer says "replayed": true, stock +7 once.
+POST {{base}}/b/GUL/purchase-orders/{{poId}}/receive
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "clientReceiptId": "6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4b", "lines": [{ "productId": "{{oilId1L}}", "qty": 7 }] }
+
+### Receive 4 more → 409 RECEIVE_EXCEEDS_ORDERED (only 3 left)
+POST {{base}}/b/GUL/purchase-orders/{{poId}}/receive
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "clientReceiptId": "6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4c", "lines": [{ "productId": "{{oilId1L}}", "qty": 4 }] }
+
+### Receive the last 3 at ৳165.00 (an invoice price override) → received
+POST {{base}}/b/GUL/purchase-orders/{{poId}}/receive
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "clientReceiptId": "6f1c2a3b-4d5e-4f60-8a7b-9c0d1e2f3a4d", "lines": [{ "productId": "{{oilId1L}}", "qty": 3, "unitCost": 16500 }] }
+
+### Cancel now → 409 INVALID_STATE (goods were received)
+POST {{base}}/b/GUL/purchase-orders/{{poId}}/cancel
+Authorization: Bearer {{token}}
+
+### The PO: lines (ordered / received / remaining), two receipts, totals
+GET {{base}}/b/GUL/purchase-orders/{{poId}}
+Authorization: Bearer {{token}}
+
+### Supplier detail with its recent POs
+GET {{base}}/suppliers/{{supplierId}}
+Authorization: Bearer {{token}}

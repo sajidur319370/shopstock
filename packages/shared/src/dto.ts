@@ -3,6 +3,7 @@ import type {
   AdjustmentReason,
   MovementType,
   PaymentMethod,
+  PoStatus,
   RefType,
   ReturnReason,
   Role,
@@ -259,6 +260,88 @@ export interface ReturnRowDto {
   processedByName: string;
   businessDate: string;
   createdAt: string;
+}
+
+export interface SupplierDto {
+  id: Id;
+  name: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  address: string;
+  notes: string;
+  isActive: boolean;
+}
+
+/** One PO line. `remaining` is derived (ordered − received), never stored. */
+export interface POLineDto {
+  productId: Id;
+  sku: string;
+  name: string;
+  orderedQty: number;
+  receivedQty: number;
+  remaining: number;
+  unitCost: number;
+}
+
+export interface POReceiptDto {
+  id: Id;
+  receivedAt: string;
+  receivedByName: string;
+  lines: { productId: Id; qty: number; unitCost: number }[];
+  note: string;
+}
+
+/** PO costs are visible to everyone who may see POs (Manager+): no stripping. */
+export interface PODto {
+  id: Id;
+  poNumber: string; // 'PO-2026-0007'
+  supplierId: Id;
+  supplierName: string;
+  status: PoStatus;
+  items: POLineDto[];
+  receipts: POReceiptDto[];
+  expectedDate: string | null;
+  notes: string;
+  createdAt: string;
+  orderedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+  closedAt: string | null;
+  /** Derived from the lines and receipts in the mapper, so they can't drift. */
+  totals: { orderedValue: number; receivedValue: number };
+}
+
+/** One row of the PO list (no lines). */
+export interface PORowDto {
+  id: Id;
+  poNumber: string;
+  supplierId: Id;
+  supplierName: string;
+  status: PoStatus;
+  lineCount: number;
+  orderedValue: number;
+  expectedDate: string | null;
+  createdAt: string;
+}
+
+export interface SupplierDetailDto {
+  supplier: SupplierDto;
+  /** The 10 most recent POs from this supplier at the actor's branches. */
+  recentPOs: (PORowDto & { branchCode: string })[];
+}
+
+/** A low or out-of-stock product with a suggested order quantity (FR-PO-11). */
+export interface POSuggestionDto {
+  productId: Id;
+  sku: string;
+  name: string;
+  unit: Unit;
+  quantity: number;
+  reorderLevel: number;
+  status: 'low' | 'out';
+  suggestedQty: number; // max(2 × reorderLevel − quantity, 1)
+  lastCost: number | null; // the last purchase receipt cost at this branch (pre-fills unitCost)
 }
 
 /** "My shift today" for the cashier at the POS (FR-SAL-12). */

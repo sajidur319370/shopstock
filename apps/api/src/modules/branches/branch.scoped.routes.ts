@@ -4,6 +4,7 @@ import { bctx } from '../../middleware/branchCtx';
 import { getBranchByCode } from '../../lib/cache';
 import { inventoryRouter } from '../inventory/inventory.routes';
 import { posRouter } from '../pos/pos.routes';
+import { poRouter } from '../purchasing/po.routes';
 import { returnsRouter } from '../returns/return.routes';
 import { salesRouter } from '../sales/sale.routes';
 import { toBranchDto } from './branch.dto';
@@ -19,4 +20,5 @@ branchRouter.use(inventoryRouter); // /inventory, /adjustments, /stock-counts, /
 branchRouter.use('/sales', salesRouter);
 branchRouter.use('/pos', posRouter);
 branchRouter.use('/returns', returnsRouter);
-// Day 15: '/purchase-orders' · Day 17: '/transfers' ...
+branchRouter.use('/purchase-orders', poRouter);
+// Day 17: '/transfers' ...
