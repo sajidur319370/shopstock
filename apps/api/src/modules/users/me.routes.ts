@@ -4,7 +4,7 @@ import { User } from '../../db/models';
 import { listBranches } from '../../lib/cache';
 import { notFound } from '../../lib/errors';
 import { noPermissionNeeded } from '../../middleware/authorize';
-import { demoGuard } from '../../middleware/demoGuard';
+import { demoGuard, demoSetupLock } from '../../middleware/demoGuard';
 import { validate, valid } from '../../middleware/validate';
 import { canAccess } from '../../types/ctx';
 import { changePassword } from '../auth/auth.service';
@@ -28,15 +28,21 @@ meRouter.get('/', noPermissionNeeded('own profile'), async (req, res) => {
 });
 
 const updateReq = { body: updateMeSchema };
-meRouter.patch('/', noPermissionNeeded('own profile'), validate(updateReq), async (req, res) => {
-  const user = await User.findByIdAndUpdate(
-    req.ctx.userId,
-    { $set: valid(req, updateReq).body },
-    { returnDocument: 'after', runValidators: true },
-  ).lean();
-  if (!user) throw notFound();
-  res.json({ user: toUserDto(user) });
-});
+meRouter.patch(
+  '/',
+  noPermissionNeeded('own profile'),
+  demoSetupLock,
+  validate(updateReq),
+  async (req, res) => {
+    const user = await User.findByIdAndUpdate(
+      req.ctx.userId,
+      { $set: valid(req, updateReq).body },
+      { returnDocument: 'after', runValidators: true },
+    ).lean();
+    if (!user) throw notFound();
+    res.json({ user: toUserDto(user) });
+  },
+);
 
 const pwReq = { body: changePasswordSchema };
 meRouter.patch(

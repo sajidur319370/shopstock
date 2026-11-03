@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { createStaffSchema, resetStaffPasswordSchema, updateStaffSchema } from '@shopstock/shared';
 import { idParams, oid } from '../../lib/ids';
 import { authorize } from '../../middleware/authorize';
-import { demoGuard } from '../../middleware/demoGuard';
+import { demoGuard, demoSetupLock } from '../../middleware/demoGuard';
 import { validate, valid } from '../../middleware/validate';
 import * as svc from './staff.service';
 
@@ -14,20 +14,28 @@ staffRouter.get('/', authorize('staff:view'), async (req, res) => {
 });
 
 const createReq = { body: createStaffSchema };
-staffRouter.post('/', authorize('staff:manage'), validate(createReq), async (req, res) => {
+staffRouter.post('/', authorize('staff:manage'), demoSetupLock, validate(createReq), async (req, res) => {
   res.status(201).json({ staff: await svc.createStaff(req.ctx, valid(req, createReq).body) });
 });
 
 const updateReq = { params: idParams, body: updateStaffSchema };
-staffRouter.patch('/:id', authorize('staff:manage'), demoGuard, validate(updateReq), async (req, res) => {
-  const { params, body } = valid(req, updateReq);
-  res.json({ staff: await svc.updateStaff(req.ctx, oid(params.id), body) });
-});
+staffRouter.patch(
+  '/:id',
+  authorize('staff:manage'),
+  demoSetupLock,
+  demoGuard,
+  validate(updateReq),
+  async (req, res) => {
+    const { params, body } = valid(req, updateReq);
+    res.json({ staff: await svc.updateStaff(req.ctx, oid(params.id), body) });
+  },
+);
 
 const resetReq = { params: idParams, body: resetStaffPasswordSchema };
 staffRouter.post(
   '/:id/reset-password',
   authorize('staff:manage'),
+  demoSetupLock,
   demoGuard,
   validate(resetReq),
   async (req, res) => {

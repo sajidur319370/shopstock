@@ -19,3 +19,17 @@ export const demoGuard: RequestHandler = async (req, _res, next) => {
   if (user?.email.endsWith(DEMO_DOMAIN)) throw forbidden('DEMO_READ_ONLY', 'Disabled in the public demo.');
   next();
 };
+
+/**
+ * The public demo's second rule: a demo account can RUN the shop (sell, return, order, receive,
+ * transfer, adjust stock, read every report) but can't change its SETUP: settings, branches, staff,
+ * the catalog, suppliers, or its own name. Those are shared by every visitor; one bad edit (a renamed
+ * shop on every receipt, a deactivated branch, archived products) would spoil the demo for the next.
+ * The account checked is the ACTOR. Mount after authorize() on the setup-changing routes.
+ */
+export const demoSetupLock: RequestHandler = (req, _res, next) => {
+  if (env.DEMO_MODE && req.ctx.email?.endsWith(DEMO_DOMAIN)) {
+    throw forbidden('DEMO_READ_ONLY', 'Changing the shop setup is disabled in the public demo.');
+  }
+  next();
+};

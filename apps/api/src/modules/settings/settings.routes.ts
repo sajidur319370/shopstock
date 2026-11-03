@@ -4,6 +4,7 @@ import { Settings } from '../../db/models';
 import { getSettings, invalidateCache } from '../../lib/cache';
 import { flattenForSet } from '../../lib/objects';
 import { authorize } from '../../middleware/authorize';
+import { demoSetupLock } from '../../middleware/demoGuard';
 import { validate, valid } from '../../middleware/validate';
 import { toPublicSettings } from './settings.dto';
 
@@ -19,11 +20,17 @@ settingsRouter.get('/full', authorize('settings:update'), async (_req, res) => {
 });
 
 const updateReq = { body: updateSettingsSchema };
-settingsRouter.patch('/', authorize('settings:update'), validate(updateReq), async (req, res) => {
-  // { 'discountCapsBps.cashier': 500 } so a partial nested object doesn't wipe its siblings
-  const $set = flattenForSet(valid(req, updateReq).body);
-  await Settings.updateOne({ _id: 'shop' }, { $set }, { runValidators: true });
-  invalidateCache();
-  const settings = await getSettings();
-  res.json({ settings: toPublicSettings({ ...req.ctx, settings }), full: settings });
-});
+settingsRouter.patch(
+  '/',
+  authorize('settings:update'),
+  demoSetupLock,
+  validate(updateReq),
+  async (req, res) => {
+    // { 'discountCapsBps.cashier': 500 } so a partial nested object doesn't wipe its siblings
+    const $set = flattenForSet(valid(req, updateReq).body);
+    await Settings.updateOne({ _id: 'shop' }, { $set }, { runValidators: true });
+    invalidateCache();
+    const settings = await getSettings();
+    res.json({ settings: toPublicSettings({ ...req.ctx, settings }), full: settings });
+  },
+);

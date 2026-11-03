@@ -10,7 +10,7 @@ export const loadActor =
   async (req, _res, next) => {
     // NEVER cached: deactivation and reassignment take effect on the next request (FR-AUTH-15).
     const user = await User.findById(req.userId)
-      .select('name role branchIds isActive mustChangePassword')
+      .select('email name role branchIds isActive mustChangePassword')
       .lean();
     if (!user || !user.isActive) throw unauthenticated('ACCOUNT_DISABLED', 'Your account is disabled.');
     if (user.mustChangePassword && !opts.allowPasswordChange) {
@@ -21,6 +21,7 @@ export const loadActor =
     req.ctx = makeCtx({
       userId: user._id,
       userName: user.name,
+      email: user.email,
       role,
       branchIds: role === 'owner' ? await allBranchIds() : user.branchIds,
       settings: await getSettings(),

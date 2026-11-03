@@ -5,6 +5,7 @@ import type { ShopSettings } from '../lib/cache';
 export interface Ctx {
   userId: Types.ObjectId;
   userName: string;
+  email?: string; // the actor's login (DEMO_MODE checks it); absent in contexts the seed/tests build
   role: Role;
   roleLevel: number;
   branchIds: Types.ObjectId[]; // branches this actor may access (Owner: all)
