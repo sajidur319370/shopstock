@@ -144,7 +144,7 @@ export function ReceivePage() {
           </TableHeader>
           <TableBody>
             {lines.map(({ item: i, q, override }) => (
-              <TableRow key={i.productId} className={i.remaining === 0 ? 'text-gray-400' : undefined}>
+              <TableRow key={i.productId} className={i.remaining === 0 ? 'text-gray-500' : undefined}>
                 <TableCell>
                   {i.name} <span className="font-mono text-xs text-gray-500">{i.sku}</span>
                 </TableCell>

@@ -95,7 +95,7 @@ export function DailyReport({ scope }: { scope: ReportScope }) {
           {r.days.map((d) => (
             <TableRow
               key={d.day}
-              className={d.all.sales === 0 && d.all.refundCount === 0 ? 'text-gray-400' : undefined}
+              className={d.all.sales === 0 && d.all.refundCount === 0 ? 'text-gray-500' : undefined}
             >
               <TableCell className="whitespace-nowrap tabular-nums">{d.day}</TableCell>
               {COLS.map(([k]) => (

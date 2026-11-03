@@ -16,7 +16,27 @@ export function createApp() {
   app.disable('x-powered-by');
 
   app.use(httpLogger);
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          'default-src': ["'self'"],
+          'script-src': ["'self'"], // no inline scripts, no CDNs: an injected <script> never runs
+          // Inline STYLES can't run code: the receipt's @page <style> and Radix/Recharts positioning need them.
+          'style-src': ["'self'", "'unsafe-inline'"],
+          'img-src': ["'self'", 'data:'],
+          'font-src': ["'self'"],
+          'connect-src': ["'self'"], // same-origin API only
+          'object-src': ["'none'"],
+          'base-uri': ["'self'"],
+          'form-action': ["'self'"],
+          'frame-ancestors': ["'none'"], // no clickjacking
+        },
+      },
+      hsts: isProd ? { maxAge: 15_552_000, includeSubDomains: true } : false,
+    }),
+  );
   app.use(cors({ origin: env.APP_URL, credentials: true }));
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());

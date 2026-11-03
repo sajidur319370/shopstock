@@ -221,7 +221,7 @@ function ReturnForm({ sale, refetch }: { sale: SaleDto; refetch: () => void }) {
           </TableHeader>
           <TableBody>
             {lines.map(({ line: l, max, q, restock: rs, refund }) => (
-              <TableRow key={l.id} className={max === 0 ? 'text-gray-400' : undefined}>
+              <TableRow key={l.id} className={max === 0 ? 'text-gray-500' : undefined}>
                 <TableCell>
                   {l.name} <span className="font-mono text-xs text-gray-500">{l.sku}</span>
                 </TableCell>

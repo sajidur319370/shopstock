@@ -16,10 +16,16 @@
     "format": "prettier --write .",
     "db:up": "docker compose up -d --wait mongo",
     "db:down": "docker compose down",
-    "db:reset": "docker exec shopstock-mongo mongosh shopstock --quiet --eval \"db.getCollectionNames().forEach(c => db[c].deleteMany({})); print('local shopstock DB emptied (indexes kept)')\""
+    "db:reset": "docker exec shopstock-mongo mongosh shopstock --quiet --eval \"db.getCollectionNames().forEach(c => db[c].deleteMany({})); print('local shopstock DB emptied (indexes kept)')\"",
+    "seed": "npm run seed -w @shopstock/api --",
+    "load:pos": "npm run load:pos -w @shopstock/api",
+    "reconcile": "npm run reconcile -w @shopstock/api",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "concurrently": "^10.0.6",
     "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",

@@ -98,6 +98,7 @@ function PayForm() {
             value={tendered}
             onChange={setTendered}
             placeholder="Cash received"
+            aria-label="Cash received"
           />
           <div className="flex flex-wrap gap-2">
             {quick.map((amount, i) => (

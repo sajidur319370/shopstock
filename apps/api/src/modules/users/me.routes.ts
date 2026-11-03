@@ -3,6 +3,8 @@ import { changePasswordSchema, updateMeSchema, type MeResponse } from '@shopstoc
 import { User } from '../../db/models';
 import { listBranches } from '../../lib/cache';
 import { notFound } from '../../lib/errors';
+import { noPermissionNeeded } from '../../middleware/authorize';
+import { demoGuard } from '../../middleware/demoGuard';
 import { validate, valid } from '../../middleware/validate';
 import { canAccess } from '../../types/ctx';
 import { changePassword } from '../auth/auth.service';
@@ -11,7 +13,7 @@ import { toUserDto } from './user.dto';
 
 export const meRouter = Router(); // mounted behind authenticate + loadActor({ allowPasswordChange: true })
 
-meRouter.get('/', async (req, res) => {
+meRouter.get('/', noPermissionNeeded('own profile'), async (req, res) => {
   const ctx = req.ctx;
   const user = await User.findById(ctx.userId).select('email name role mustChangePassword').lean();
   if (!user) throw notFound();
@@ -26,7 +28,7 @@ meRouter.get('/', async (req, res) => {
 });
 
 const updateReq = { body: updateMeSchema };
-meRouter.patch('/', validate(updateReq), async (req, res) => {
+meRouter.patch('/', noPermissionNeeded('own profile'), validate(updateReq), async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.ctx.userId,
     { $set: valid(req, updateReq).body },
@@ -37,8 +39,14 @@ meRouter.patch('/', validate(updateReq), async (req, res) => {
 });
 
 const pwReq = { body: changePasswordSchema };
-meRouter.patch('/password', validate(pwReq), async (req, res) => {
-  const { currentPassword, newPassword } = valid(req, pwReq).body;
-  await changePassword(req.ctx.userId, req.sessionId, currentPassword, newPassword);
-  res.json({ ok: true });
-});
+meRouter.patch(
+  '/password',
+  noPermissionNeeded('own password'),
+  demoGuard,
+  validate(pwReq),
+  async (req, res) => {
+    const { currentPassword, newPassword } = valid(req, pwReq).body;
+    await changePassword(req.ctx.userId, req.sessionId, currentPassword, newPassword);
+    res.json({ ok: true });
+  },
+);

@@ -10,6 +10,7 @@ type Props = {
   placeholder?: string;
   autoFocus?: boolean;
   'aria-invalid'?: boolean;
+  'aria-label'?: string;
 };
 
 /** Typed text → integer minor units. Never parseFloat. `null` while the text isn't a valid amount. */

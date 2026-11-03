@@ -205,14 +205,22 @@ function HourBars({ hours }: { hours: BranchDashboardDto['byHour'] }) {
   return (
     <div className="flex h-32 items-end gap-1" role="list" aria-label="Sales by hour">
       {shown.map((h) => (
-        <div key={h.hour} role="listitem" className="flex flex-1 flex-col items-center gap-1">
+        // The name goes on the list item (a plain div may not carry aria-label); the visuals are hidden.
+        <div
+          key={h.hour}
+          role="listitem"
+          aria-label={`${hh(h.hour)}:00–${hh(h.hour + 1)}:00: ${h.count} sale${h.count === 1 ? '' : 's'}, ${money(h.total)}`}
+          className="flex flex-1 flex-col items-center gap-1"
+        >
           <div
+            aria-hidden
             className="w-full rounded-t bg-gray-800"
             style={{ height: `${max ? (h.total / max) * 100 : 0}%`, minHeight: h.count ? 2 : 0 }}
-            aria-label={`${hh(h.hour)}:00–${hh(h.hour + 1)}:00: ${h.count} sale${h.count === 1 ? '' : 's'}, ${money(h.total)}`}
             title={`${h.count} sales · ${money(h.total)}`}
           />
-          <span className="text-[10px] text-gray-500 tabular-nums">{hh(h.hour)}</span>
+          <span aria-hidden className="text-[10px] text-gray-500 tabular-nums">
+            {hh(h.hour)}
+          </span>
         </div>
       ))}
     </div>

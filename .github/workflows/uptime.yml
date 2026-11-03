@@ -1,0 +1,15 @@
+name: Uptime ping
+# Keeps the free Render instance awake (it sleeps after 15 min idle). Set the repository variable
+# DEMO_URL (Settings → Secrets and variables → Actions → Variables), e.g. https://shopstock.onrender.com.
+# GitHub may delay scheduled runs, and disables them after 60 days without repository activity.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    if: vars.DEMO_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS --max-time 60 "${{ vars.DEMO_URL }}/health"

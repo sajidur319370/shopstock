@@ -130,7 +130,7 @@ export function TransferDetailPage() {
 
       <ol className="space-y-1 text-sm" aria-label="Timeline">
         {steps.map((s) => (
-          <li key={s.label} className={cn('flex flex-wrap gap-x-3', !s.at && 'text-gray-400')}>
+          <li key={s.label} className={cn('flex flex-wrap gap-x-3', !s.at && 'text-gray-500')}>
             <span aria-hidden className="w-4">
               {s.at ? '✓' : '○'}
             </span>
@@ -168,7 +168,7 @@ export function TransferDetailPage() {
               {showCost && (
                 <TableCell className="text-right tabular-nums">
                   {i.unitCost == null ? (
-                    <span className="text-gray-400" title="Set when the goods leave">
+                    <span className="text-gray-500" title="Set when the goods leave">
                       at dispatch
                     </span>
                   ) : (

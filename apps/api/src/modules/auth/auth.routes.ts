@@ -2,6 +2,7 @@ import { Router, type Request } from 'express';
 import { loginSchema } from '@shopstock/shared';
 import { validate, valid } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
+import { demoGuard } from '../../middleware/demoGuard';
 import { loginLimiter } from '../../middleware/rateLimits';
 import * as auth from './auth.service';
 import { REFRESH_COOKIE, clearRefreshCookie, setRefreshCookie } from './cookies';
@@ -38,7 +39,7 @@ authRouter.post('/logout', async (req, res) => {
   res.status(204).end();
 });
 
-authRouter.post('/logout-all', authenticate, async (req, res) => {
+authRouter.post('/logout-all', authenticate, demoGuard, async (req, res) => {
   await auth.revokeAllSessions(req.userId);
   clearRefreshCookie(res);
   res.status(204).end();

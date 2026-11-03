@@ -50,7 +50,7 @@ export function AppShell() {
         {links.map((l, i) => (
           <div key={l.label}>
             {l.scope === 'shop' && links[i - 1]?.scope === 'branch' && (
-              <p className="mt-4 mb-1 px-3 text-xs font-medium tracking-wide text-gray-400 uppercase">Shop</p>
+              <p className="mt-4 mb-1 px-3 text-xs font-medium tracking-wide text-gray-500 uppercase">Shop</p>
             )}
             <NavLink
               to={l.href}

@@ -8,7 +8,11 @@
     "start": "node dist/server.js",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run --passWithNoTests",
-    "db:sync": "tsx scripts/db-sync.ts"
+    "db:sync": "tsx scripts/db-sync.ts",
+    "seed": "tsx scripts/seed.ts",
+    "load:pos": "tsx scripts/load-pos.ts",
+    "reconcile": "tsx scripts/reconcile.ts",
+    "e2e:server": "npm run build -w @shopstock/web && npm run build && tsx scripts/e2e-server.ts"
   },
   "dependencies": {
     "@shopstock/shared": "*",

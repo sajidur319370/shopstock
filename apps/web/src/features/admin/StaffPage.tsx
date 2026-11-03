@@ -118,7 +118,7 @@ export function StaffPage() {
             const codes = s.branchIds.map((id) => codeOf.get(id)).filter(Boolean);
             const hidden = s.branchIds.length - codes.length;
             return (
-              <TableRow key={s.id} className={s.isActive ? undefined : 'text-gray-400'}>
+              <TableRow key={s.id} className={s.isActive ? undefined : 'text-gray-500'}>
                 <TableCell className="font-medium">
                   {s.name}
                   {s.id === user.id && <span className="ml-1 text-xs text-gray-500">(you)</span>}

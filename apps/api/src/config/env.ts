@@ -17,6 +17,10 @@ const EnvSchema = z.object({
   // deployment can't be claimed by whoever opens it first. Setup can only succeed once anyway.
   SETUP_TOKEN: z.string().min(16).optional(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).optional(),
+  // Public demo: anyone may log in as a demo account, so account-takeover actions on them are refused.
+  DEMO_MODE: z.stringbool().default(false),
+  // The seed's password for every demo login (never committed: .env / Render only).
+  SEED_DEMO_PASSWORD: z.string().min(8).optional(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
