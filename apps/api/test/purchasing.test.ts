@@ -392,6 +392,7 @@ describe('purchase orders: reading', () => {
       ((await as(s.managerGul.token).get(`${po()}${q}`)).body.items as PORowDto[]).map((r) => r.poNumber);
     expect(await nos()).toEqual([d2.poNumber, o1.poNumber, d1.poNumber]);
     expect(await nos('?status=draft')).toEqual([d2.poNumber, d1.poNumber]);
+    expect(await nos('?status=open')).toEqual([o1.poNumber]); // ordered + partially_received
     expect(await nos(`?supplierId=${supB.id}`)).toEqual([d2.poNumber, o1.poNumber]);
     const row = (await as(s.managerGul.token).get(po())).body.items[0] as PORowDto;
     expect(row).toMatchObject({ lineCount: 1, orderedValue: 500, status: 'draft', supplierName: supB.name });

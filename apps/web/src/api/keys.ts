@@ -20,4 +20,10 @@ export const qk = {
   // ['returns', code] invalidates every returns-list filter of that branch after a return
   returns: (code: string, f: object) => ['returns', code, f] as const,
   saleReturn: (code: string, id: string) => ['return', code, id] as const,
+  // ['suppliers'] invalidates every supplier list and pick-list after a supplier changes
+  suppliers: (f: object) => ['suppliers', f] as const,
+  supplier: (id: string) => ['supplier', id] as const,
+  pos: (code: string, f: object) => ['pos', code, f] as const,
+  po: (code: string, id: string) => ['po', code, id] as const,
+  poSuggestions: (code: string) => ['po-suggestions', code] as const,
 };

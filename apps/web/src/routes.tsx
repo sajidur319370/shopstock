@@ -27,6 +27,13 @@ import { SalesHistoryPage } from '@/features/sales/SalesHistoryPage';
 import { NewReturnPage } from '@/features/returns/NewReturnPage';
 import { ReturnDetailPage } from '@/features/returns/ReturnDetailPage';
 import { ReturnsPage } from '@/features/returns/ReturnsPage';
+import { POListPage } from '@/features/purchasing/POListPage';
+import { POEditorPage } from '@/features/purchasing/POEditorPage';
+import { PODetailPage } from '@/features/purchasing/PODetailPage';
+import { ReceivePage } from '@/features/purchasing/ReceivePage';
+import { SuppliersPage } from '@/features/suppliers/SuppliersPage';
+import { SupplierFormPage } from '@/features/suppliers/SupplierFormPage';
+import { SupplierDetailPage } from '@/features/suppliers/SupplierDetailPage';
 
 export function AppRoutes() {
   return (
@@ -95,7 +102,46 @@ export function AppRoutes() {
                     </RequirePermission>
                   }
                 />
-                <Route path="purchase-orders" element={<ComingSoon title="Purchase orders" day={16} />} />
+                <Route
+                  path="purchase-orders"
+                  element={
+                    <RequirePermission p="po:view">
+                      <POListPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="purchase-orders/new"
+                  element={
+                    <RequirePermission p="po:manage">
+                      <POEditorPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="purchase-orders/:id"
+                  element={
+                    <RequirePermission p="po:view">
+                      <PODetailPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="purchase-orders/:id/edit"
+                  element={
+                    <RequirePermission p="po:manage">
+                      <POEditorPage />
+                    </RequirePermission>
+                  }
+                />
+                <Route
+                  path="purchase-orders/:id/receive"
+                  element={
+                    <RequirePermission p="po:receive">
+                      <ReceivePage />
+                    </RequirePermission>
+                  }
+                />
                 <Route path="transfers" element={<ComingSoon title="Transfers" day={17} />} />
               </Route>
 
@@ -114,7 +160,34 @@ export function AppRoutes() {
                   </RequirePermission>
                 }
               />
-              <Route path="/suppliers" element={<ComingSoon title="Suppliers" day={16} />} />
+              <Route
+                path="/suppliers/*"
+                element={
+                  <RequirePermission p="supplier:view">
+                    <Routes>
+                      <Route index element={<SuppliersPage />} />
+                      <Route
+                        path="new"
+                        element={
+                          <RequirePermission p="supplier:manage">
+                            <SupplierFormPage />
+                          </RequirePermission>
+                        }
+                      />
+                      <Route path=":id" element={<SupplierDetailPage />} />
+                      <Route
+                        path=":id/edit"
+                        element={
+                          <RequirePermission p="supplier:manage">
+                            <SupplierFormPage />
+                          </RequirePermission>
+                        }
+                      />
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Routes>
+                  </RequirePermission>
+                }
+              />
               <Route path="/reports" element={<ComingSoon title="Reports" day={19} />} />
               <Route
                 path="/admin/branches"

@@ -290,7 +290,8 @@ export async function receivePO(
 /** FR-PO-10: newest first, filtered by status and supplier. */
 export async function listPOs(ctx: BranchCtx, f: POListQuery): Promise<Page<PORowDto>> {
   const filter: Record<string, unknown> = { branchId: ctx.branchId };
-  if (f.status) filter.status = f.status;
+  if (f.status === 'open') filter.status = { $in: PO_OPEN_STATUSES };
+  else if (f.status) filter.status = f.status;
   if (f.supplierId) filter.supplierId = oid(f.supplierId);
   if (f.cursor) Object.assign(filter, olderThan(decodeCursor(f.cursor)));
 

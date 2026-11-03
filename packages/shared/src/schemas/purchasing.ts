@@ -81,7 +81,7 @@ export const receivePOSchema = z.object({
 });
 
 export const poListQuery = z.object({
-  status: z.enum(PO_STATUSES).optional(),
+  status: z.enum([...PO_STATUSES, 'open']).optional(), // open = ordered + partially_received
   supplierId: objectIdSchema.optional(),
   cursor: z.string().max(300).optional(),
 });
