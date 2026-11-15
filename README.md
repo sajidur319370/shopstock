@@ -78,6 +78,15 @@ p50 51 ms, p95 158 ms, p99 267 ms, 0 unexpected errors, invoices gapless, reconc
 | Seed a production database                       | `SEED_ALLOW_PROD_RESET=yes-really` + the ops URI: refused otherwise                                                                    |
 | Backup                                           | `mongodump --uri "$MONGODB_OPS_URI" --gzip --archive=shopstock.gz`; restore with `mongorestore --drop`, then `db:sync` and `reconcile` |
 
+**Reset the live demo** (fresh 60-day history, all demo logins recreated with the demo password; drops the database):
+
+```bash
+SEED_ALLOW_PROD_RESET=yes-really SEED_DEMO_PASSWORD='<demo password>' MONGODB_OPS_URI='<Atlas ops URI>' npm run seed -- --reset
+```
+
+Seeding across the internet is slow. It's faster to seed locally, then `mongodump` and `mongorestore --drop` into Atlas, then
+run `db:sync` and `reconcile` against Atlas.
+
 Security: strict CSP (`script-src 'self'`), HSTS, per-user API rate limit, login limit on failed attempts,
 refresh-token rotation with reuse detection, `$`-key rejection, no cost fields for cashiers (tested),
 `DEMO_MODE` adds the one-click demo logins (`POST /api/auth/demo` takes an account name, never a password, and
