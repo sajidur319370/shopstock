@@ -15,7 +15,11 @@ const meta = (req: Request) => ({ userAgent: req.get('user-agent') ?? '', ip: re
 export const setupRouter = Router();
 
 setupRouter.get('/status', async (_req, res) => {
-  res.json({ needsSetup: await svc.needsSetup(), tokenRequired: Boolean(env.SETUP_TOKEN) });
+  res.json({
+    needsSetup: await svc.needsSetup(),
+    tokenRequired: Boolean(env.SETUP_TOKEN),
+    demoMode: env.DEMO_MODE,
+  });
 });
 
 /** Read per request (not at import), so tests can switch it on and off. */

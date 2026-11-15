@@ -74,6 +74,10 @@ export type ReturnReason = (typeof RETURN_REASONS)[number];
 
 export const RECEIPT_FORMATS = ['80mm', 'a4'] as const;
 
+/** The public demo's one-click logins (DEMO_MODE): the local part of each seeded @demo.shopstock.dev account. */
+export const DEMO_ACCOUNTS = ['owner', 'manager.gul', 'manager.dhn', 'cashier.gul'] as const;
+export type DemoAccount = (typeof DEMO_ACCOUNTS)[number];
+
 export const BPS = 10_000; // 100% in basis points
 
 export const LIMITS = {

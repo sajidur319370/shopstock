@@ -54,6 +54,7 @@ describe('setup', () => {
       expect((await request(app).get('/api/setup/status')).body).toEqual({
         needsSetup: true,
         tokenRequired: false,
+        demoMode: false,
       });
     });
 

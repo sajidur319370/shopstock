@@ -5,7 +5,7 @@ returns, purchase orders, stock transfers between branches, dashboards and repor
 **MongoDB · Express · React · Node**, TypeScript end to end, one shared package for the money rules.
 
 **Live demo:** see the repository's _About_ link. The first load can take ~40 s (free hosting sleeps).
-Demo logins (one shared password, given on request):
+On the login page, **Try the demo** logs you in as any of these roles with one click (no password to type):
 
 | Role                | Email                            | What to try                                          |
 | ------------------- | -------------------------------- | ---------------------------------------------------- |
@@ -80,7 +80,8 @@ p50 51 ms, p95 158 ms, p99 267 ms, 0 unexpected errors, invoices gapless, reconc
 
 Security: strict CSP (`script-src 'self'`), HSTS, per-user API rate limit, login limit on failed attempts,
 refresh-token rotation with reuse detection, `$`-key rejection, no cost fields for cashiers (tested),
-`DEMO_MODE` lets demo logins run the shop (sell, return, order, receive, transfer, report) but refuses
+`DEMO_MODE` adds the one-click demo logins (`POST /api/auth/demo` takes an account name, never a password, and
+only signs in the seeded demo accounts) and lets them run the shop (sell, return, order, receive, transfer, report) but refuses
 password changes and any change to the shared setup (settings, branches, staff, catalog, suppliers).
 
 ## Trade-offs, and what I'd do at scale

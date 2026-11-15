@@ -1,9 +1,9 @@
 import { Router, type Request } from 'express';
-import { loginSchema } from '@shopstock/shared';
+import { demoLoginSchema, loginSchema } from '@shopstock/shared';
 import { validate, valid } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
 import { demoGuard } from '../../middleware/demoGuard';
-import { loginLimiter } from '../../middleware/rateLimits';
+import { demoLoginLimiter, loginLimiter } from '../../middleware/rateLimits';
 import * as auth from './auth.service';
 import { REFRESH_COOKIE, clearRefreshCookie, setRefreshCookie } from './cookies';
 
@@ -18,6 +18,14 @@ export const authRouter = Router();
 const loginReq = { body: loginSchema };
 authRouter.post('/login', loginLimiter, validate(loginReq), async (req, res) => {
   const { user, accessToken, refreshToken } = await auth.login(valid(req, loginReq).body, meta(req));
+  setRefreshCookie(res, refreshToken);
+  res.json({ user, accessToken });
+});
+
+const demoReq = { body: demoLoginSchema };
+authRouter.post('/demo', demoLoginLimiter, validate(demoReq), async (req, res) => {
+  const { account } = valid(req, demoReq).body;
+  const { user, accessToken, refreshToken } = await auth.demoLogin(account, meta(req));
   setRefreshCookie(res, refreshToken);
   res.json({ user, accessToken });
 });

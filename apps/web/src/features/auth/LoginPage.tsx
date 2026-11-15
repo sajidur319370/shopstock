@@ -7,11 +7,15 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/FormField';
 import { applyServerErrors } from '@/lib/formErrors';
 import { AuthCard } from './AuthCard';
+import { DemoLogins } from './DemoLogins';
+import { useSetupStatus } from './useMe';
 import { safeReturnTo, useLogin } from './useAuthActions';
 
 export function LoginPage() {
   const [params] = useSearchParams();
-  const login = useLogin(safeReturnTo(params.get('returnTo')));
+  const returnTo = safeReturnTo(params.get('returnTo'));
+  const login = useLogin(returnTo);
+  const status = useSetupStatus();
   const { register, handleSubmit, setError, formState } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
   });
@@ -34,6 +38,7 @@ export function LoginPage() {
       <p className="mt-4 text-center text-sm text-gray-500">
         Forgot your password? Ask your manager or the owner to reset it.
       </p>
+      {status.data?.demoMode && <DemoLogins returnTo={returnTo} />}
     </AuthCard>
   );
 }

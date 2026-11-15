@@ -570,6 +570,7 @@ export interface ShiftSummaryDto {
 export interface SetupStatusDto {
   needsSetup: boolean;
   tokenRequired: boolean; // production: POST /setup needs the x-setup-token header
+  demoMode: boolean; // the public demo: the login page offers one-click demo logins
 }
 export interface AuthResponse {
   accessToken: string;

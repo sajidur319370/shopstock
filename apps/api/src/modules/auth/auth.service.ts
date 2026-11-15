@@ -1,13 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import type { Types } from 'mongoose';
-import type { LoginInput } from '@shopstock/shared';
+import type { DemoAccount, LoginInput } from '@shopstock/shared';
+import { env } from '../../config/env';
 import { Session, User } from '../../db/models';
 import { withTransaction } from '../../db/transaction';
-import { badRequest, forbidden, unauthenticated } from '../../lib/errors';
+import { badRequest, forbidden, notFound, unauthenticated } from '../../lib/errors';
 import { randomToken, sha256 } from '../../lib/crypto';
 import { addDays } from '../../lib/dates';
 import { DUMMY_HASH, hashPassword, verifyPassword } from '../../lib/password';
 import { signAccessToken } from '../../lib/tokens';
+import { DEMO_DOMAIN } from '../../middleware/demoGuard';
 import { toUserDto } from '../users/user.dto';
 
 const REFRESH_DAYS = 7;
@@ -38,6 +40,22 @@ export async function login(input: LoginInput, meta: ClientMeta) {
   if (!user || !ok) throw unauthenticated('INVALID_CREDENTIALS', 'Invalid email or password');
   // The password was right, so saying "disabled" reveals nothing an attacker didn't already prove.
   if (!user.isActive) throw forbidden('ACCOUNT_DISABLED', 'Your account is disabled. Ask your manager.');
+
+  await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
+  return { user: toUserDto(user), ...(await startSession(user._id, meta)) };
+}
+
+/**
+ * The public demo's one-click login (DEMO_MODE only): signs in a SEEDED demo account without its
+ * password, so the password never ships in the web bundle. Only the four accounts in DEMO_ACCOUNTS,
+ * only under @demo.shopstock.dev; DEMO_MODE's guards still stop them changing passwords or the setup.
+ * Outside DEMO_MODE the route doesn't exist (404).
+ */
+export async function demoLogin(account: DemoAccount, meta: ClientMeta) {
+  if (!env.DEMO_MODE) throw notFound();
+  const user = await User.findOne({ email: `${account}${DEMO_DOMAIN}` }).lean();
+  if (!user) throw notFound('This demo login is not set up yet.');
+  if (!user.isActive) throw forbidden('ACCOUNT_DISABLED', 'This demo account is disabled.');
 
   await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
   return { user: toUserDto(user), ...(await startSession(user._id, meta)) };

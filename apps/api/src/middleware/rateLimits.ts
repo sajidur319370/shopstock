@@ -21,6 +21,8 @@ export const loginLimiter = rateLimit({
   limit: 10,
   skipSuccessfulRequests: true,
 });
+/** One-click demo logins: generous (a recruiter may try every role), but every request counts. */
+export const demoLoginLimiter = rateLimit({ ...base, windowMs: 15 * 60_000, limit: 60 });
 export const setupLimiter = rateLimit({ ...base, windowMs: 60 * 60_000, limit: 5 });
 
 /**

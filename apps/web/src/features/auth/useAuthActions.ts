@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
-import type { AuthResponse, LoginInput, MeResponse, SetupInput } from '@shopstock/shared';
+import type { AuthResponse, DemoAccount, LoginInput, MeResponse, SetupInput } from '@shopstock/shared';
 import { api, http, setAccessToken } from '@/api/client';
 import { qk } from '@/api/keys';
 
@@ -26,6 +26,15 @@ export function useLogin(returnTo: string) {
   });
 }
 
+/** The public demo's one-click login: the server signs in a seeded demo account (no password here). */
+export function useDemoLogin(returnTo: string) {
+  const finish = useFinishLogin();
+  return useMutation({
+    mutationFn: (account: DemoAccount) => http.post<AuthResponse>('/auth/demo', { account }),
+    onSuccess: (res) => finish(res, returnTo),
+  });
+}
+
 export function useSetup() {
   const qc = useQueryClient();
   const finish = useFinishLogin();
@@ -38,13 +47,13 @@ export function useSetup() {
         headers: token ? { 'x-setup-token': token } : undefined,
       }),
     onSuccess: async (res) => {
-      qc.setQueryData(qk.setupStatus, { needsSetup: false, tokenRequired: false });
+      qc.setQueryData(qk.setupStatus, { needsSetup: false, tokenRequired: false, demoMode: false });
       await finish(res, '/');
     },
     onError: (err) => {
       // Someone else finished setup first: stop showing the wizard.
       if ((err as { code?: string }).code === 'ALREADY_SET_UP') {
-        qc.setQueryData(qk.setupStatus, { needsSetup: false, tokenRequired: false });
+        qc.setQueryData(qk.setupStatus, { needsSetup: false, tokenRequired: false, demoMode: false });
       }
     },
   });
